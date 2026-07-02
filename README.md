@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# oDriver
 
-## Getting Started
+PWA de controle financeiro e comunidade para motoristas de aplicativo (Uber, 99, iFood). Implementação baseada no [PRD.md](./PRD.md).
 
-First, run the development server:
+## Rodando localmente
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra [http://localhost:3000](http://localhost:3000). Use o botão **"Entrar com conta demonstração"** na tela de login para explorar o app já populado com dados de exemplo (corridas, despesas, posts, ranking, badges).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Estado atual: frontend com dados mockados
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Esta primeira versão implementa **todas as telas e fluxos do MVP (PRD seção 4)** rodando inteiramente no navegador, sem backend:
 
-## Learn More
+- Autenticação, onboarding, dashboard, corridas, finanças, metas, comunidade (feed/ranking/badges) e canais de voz funcionam com **Zustand + localStorage** (`stores/`), não com Supabase.
+- O **mapa** (`app/(app)/map`) é um placeholder ilustrativo com marcadores mockados — ainda não usa a Google Maps API.
+- Os **canais de voz** (`app/(app)/community/voice`) simulam presença e "quem está falando", mas não fazem áudio real (sem LiveKit/Agora).
+- A tela **Premium** (`app/(app)/premium`) simula a assinatura localmente — não há integração com Stripe.
 
-To learn more about Next.js, take a look at the following resources:
+Nada disso está mockado como "stub morto": os stores em `stores/` espelham os campos das tabelas do PRD (seção 8), então trocar por chamadas reais ao Supabase é uma substituição direta store por store, sem redesenhar as telas.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Próximos passos para produção (ver PRD seções 7–8 e 15)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Para ligar os serviços reais, crie um `.env.local` com:
 
-## Deploy on Vercel
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
+LIVEKIT_API_KEY=
+LIVEKIT_API_SECRET=
+NEXTAUTH_SECRET=
+SENTRY_DSN=
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+E então:
+1. Rodar o schema SQL da seção 8 do PRD no Supabase e trocar os stores por queries/Realtime.
+2. Trocar `components/map/MapMock.tsx` pelo Google Maps JavaScript API (`@vis.gl/react-google-maps`).
+3. Trocar `stores/voiceStore.ts` + `components/voice/*` por um client real (LiveKit ou Agora).
+4. Integrar Stripe na tela `app/(app)/premium`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Stack
+
+Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · shadcn/ui · Zustand · React Hook Form + Zod · Recharts · next-themes.

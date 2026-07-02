@@ -1,0 +1,18 @@
+{
+  "name": "oDriver — controle financeiro para motoristas",
+  "short_name": "oDriver",
+  "description": "Registre corridas, controle ganhos e despesas, acompanhe metas e converse com a comunidade de motoristas de app.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F0F1A",
+  "theme_color": "#1A1A2E",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
