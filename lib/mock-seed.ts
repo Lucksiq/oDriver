@@ -1,6 +1,6 @@
 import { startOfDay, subDays } from "date-fns";
-import { DEMO_CITY, jitterNear } from "./geo";
-import type { MapReport, Post, RankingEntry, VoiceChannel } from "./types";
+import { DEMO_CITY } from "./geo";
+import type { Post, RankingEntry, VoiceChannel } from "./types";
 
 /** Deterministic PRNG so server and client render identical seed data (avoids hydration mismatch). */
 function mulberry32(seed: number) {
@@ -72,33 +72,6 @@ function generatePosts(): Post[] {
   }));
 }
 
-function generateMapReports(): MapReport[] {
-  const types: MapReport["type"][] = [
-    "accident",
-    "block",
-    "radar",
-    "risk_zone",
-    "hotspot",
-    "accident",
-    "risk_zone",
-    "hotspot",
-  ];
-  return types.map((type, i) => {
-    const point = jitterNear(DEMO_CITY, 9);
-    return {
-      id: `seed-report-${i}`,
-      type,
-      latitude: point.lat,
-      longitude: point.lng,
-      description: undefined,
-      city: DEMO_CITY.name,
-      confirmations: Math.floor(range(1, 9)),
-      active: true,
-      createdAt: subDays(ANCHOR, range(0, 2)).toISOString(),
-    };
-  });
-}
-
 export function generateRankingEntries(currentUserName: string): RankingEntry[] {
   // Own RNG instance (not the shared module-level one) so this stays
   // deterministic no matter how many times it's called during render.
@@ -160,4 +133,3 @@ export function generateVoiceChannels(): VoiceChannel[] {
 }
 
 export const seedPosts = generatePosts();
-export const seedMapReports = generateMapReports();

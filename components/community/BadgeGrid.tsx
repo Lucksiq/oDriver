@@ -10,14 +10,14 @@ import { useCurrentProfile } from "@/providers/AuthProvider";
 import { useRides } from "@/hooks/useRides";
 import { useFinances } from "@/hooks/useFinances";
 import { useGoals } from "@/hooks/useGoals";
-import { useMapStore } from "@/stores/mapStore";
+import { useMapReports } from "@/hooks/useMapReports";
 
 export function BadgeGrid() {
   const profile = useCurrentProfile();
   const { rides } = useRides();
   const { extraEarnings } = useFinances();
   const { history } = useGoals();
-  const myReportsCount = useMapStore((s) => s.myReportsCount);
+  const { myReportsCount } = useMapReports();
   const [now] = useState(() => new Date());
 
   const earned = useMemo(() => {

@@ -9,6 +9,7 @@ import { EarningsCard } from "@/components/dashboard/EarningsCard";
 import { GoalProgressBar } from "@/components/dashboard/GoalProgressBar";
 import { WeeklyChart, type WeeklyChartPoint } from "@/components/dashboard/WeeklyChart";
 import { QuickAddButton } from "@/components/dashboard/QuickAddButton";
+import { WeatherBadge } from "@/components/dashboard/WeatherBadge";
 import { useRides } from "@/hooks/useRides";
 import { useFinances } from "@/hooks/useFinances";
 import { useGoals } from "@/hooks/useGoals";
@@ -95,6 +96,7 @@ export default function DashboardPage() {
       <PageHeader
         title={`Olá, ${profile?.displayName?.split(" ")[0] ?? ""}`}
         subtitle="Aqui está o resumo do seu dia"
+        action={<WeatherBadge />}
       />
 
       <div className="grid grid-cols-2 gap-3">

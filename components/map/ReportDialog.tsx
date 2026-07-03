@@ -18,10 +18,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { useMapStore } from "@/stores/mapStore";
-import { DEMO_CITY, jitterNear } from "@/lib/geo";
+import { useMapReports } from "@/hooks/useMapReports";
+import { useAuth } from "@/providers/AuthProvider";
+import { DEMO_CITY } from "@/lib/geo";
 import type { MapReportType } from "@/lib/types";
 
 const TYPE_LABELS: Record<MapReportType, string> = {
@@ -32,31 +32,40 @@ const TYPE_LABELS: Record<MapReportType, string> = {
   hotspot: "Ponto quente",
 };
 
-export function ReportDialog() {
-  const addReport = useMapStore((s) => s.addReport);
-  const [open, setOpen] = useState(false);
+export function ReportDialog({
+  open,
+  onOpenChange,
+  location,
+  onSubmitted,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  location: { lat: number; lng: number } | null;
+  onSubmitted: () => void;
+}) {
+  const { addReport } = useMapReports();
+  const { profile } = useAuth();
   const [type, setType] = useState<MapReportType>("accident");
   const [description, setDescription] = useState("");
 
-  function submit() {
-    const point = jitterNear(DEMO_CITY, 6);
-    addReport({
+  async function submit() {
+    if (!location) return;
+    await addReport({
       type,
       description: description || undefined,
-      latitude: point.lat,
-      longitude: point.lng,
-      city: DEMO_CITY.name,
+      latitude: location.lat,
+      longitude: location.lng,
+      city: profile?.city || DEMO_CITY.name,
     });
     toast.success("Ocorrência reportada. Obrigado por ajudar a comunidade!");
     setDescription("");
-    setOpen(false);
+    setType("accident");
+    onOpenChange(false);
+    onSubmitted();
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button className="w-full" size="lg" />}>
-        Reportar ocorrência
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Reportar ocorrência</DialogTitle>

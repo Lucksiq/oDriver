@@ -161,6 +161,60 @@ export type Database = {
           },
         ]
       }
+      map_reports: {
+        Row: {
+          active: boolean
+          city: string | null
+          confirmations: number
+          created_at: string
+          description: string | null
+          id: string
+          latitude: number
+          longitude: number
+          type: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          city?: string | null
+          confirmations?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          latitude: number
+          longitude: number
+          type: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          city?: string | null
+          confirmations?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "map_reports_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "map_reports_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -299,6 +353,7 @@ export type Database = {
       }
     }
     Functions: {
+      confirm_map_report: { Args: { report_id: string }; Returns: undefined }
       is_admin: { Args: never; Returns: boolean }
     }
     Enums: {

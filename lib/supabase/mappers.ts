@@ -3,6 +3,7 @@ import type { Tables } from "./types";
 import type {
   Expense,
   ExtraEarning,
+  MapReport,
   Platform,
   Profile,
   Ride,
@@ -69,6 +70,21 @@ export function mapExtraEarningRow(row: Tables<"extra_earnings">): ExtraEarning 
     amount: Number(row.amount),
     description: row.description ?? undefined,
     occurredAt: row.occurred_at,
+  };
+}
+
+export function mapMapReportRow(row: Tables<"map_reports">): MapReport {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    type: row.type as MapReport["type"],
+    latitude: Number(row.latitude),
+    longitude: Number(row.longitude),
+    description: row.description ?? undefined,
+    city: row.city ?? "",
+    confirmations: row.confirmations,
+    active: row.active,
+    createdAt: row.created_at,
   };
 }
 

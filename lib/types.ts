@@ -108,6 +108,7 @@ export interface Post {
 
 export interface MapReport {
   id: string;
+  userId: string;
   type: MapReportType;
   latitude: number;
   longitude: number;
