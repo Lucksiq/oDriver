@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useAuthStore, useCurrentProfile } from "@/stores/authStore";
+import { useAuth } from "@/providers/AuthProvider";
 
 const FEATURES = [
   "Histórico ilimitado de corridas e despesas",
@@ -18,17 +18,29 @@ const FEATURES = [
 ];
 
 export default function PremiumPage() {
-  const profile = useCurrentProfile();
-  const setPremium = useAuthStore((s) => s.setPremium);
+  const { profile, updateProfile } = useAuth();
 
-  function subscribe() {
-    setPremium(true);
-    toast.success("Assinatura Premium ativada (simulação — sem cobrança real)");
+  async function subscribe() {
+    const result = await updateProfile({
+      is_premium: true,
+      premium_until: new Date(
+        Date.now() + 30 * 24 * 60 * 60 * 1000,
+      ).toISOString(),
+    });
+    if (result.ok) {
+      toast.success("Assinatura Premium ativada (simulação — sem cobrança real)");
+    } else {
+      toast.error(result.error);
+    }
   }
 
-  function cancel() {
-    setPremium(false);
-    toast.info("Assinatura cancelada");
+  async function cancel() {
+    const result = await updateProfile({ is_premium: false, premium_until: null });
+    if (result.ok) {
+      toast.info("Assinatura cancelada");
+    } else {
+      toast.error(result.error);
+    }
   }
 
   return (

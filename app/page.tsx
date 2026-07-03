@@ -1,29 +1,21 @@
-"use client";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAppHydrated } from "@/lib/useAppHydrated";
-import { useCurrentProfile } from "@/stores/authStore";
+export default async function RootPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-export default function RootPage() {
-  const router = useRouter();
-  const hydrated = useAppHydrated();
-  const profile = useCurrentProfile();
+  if (!user) {
+    redirect("/login");
+  }
 
-  useEffect(() => {
-    if (!hydrated) return;
-    if (!profile) {
-      router.replace("/login");
-    } else if (!profile.onboardingComplete) {
-      router.replace("/onboarding");
-    } else {
-      router.replace("/dashboard");
-    }
-  }, [hydrated, profile, router]);
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("onboarding_complete")
+    .eq("id", user.id)
+    .single();
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-brand-navy">
-      <p className="text-white/70 text-sm">Carregando oDriver…</p>
-    </div>
-  );
+  redirect(profile?.onboarding_complete ? "/dashboard" : "/onboarding");
 }

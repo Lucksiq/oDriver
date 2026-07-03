@@ -31,7 +31,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import { useRidesStore } from "@/stores/ridesStore";
+import { useRides } from "@/hooks/useRides";
 import { formatCurrency } from "@/lib/calculations";
 import type { Platform, Ride } from "@/lib/types";
 
@@ -48,9 +48,7 @@ const PLATFORM_FILTER_ITEMS: Record<string, string> = {
 };
 
 export function RideList() {
-  const rides = useRidesStore((s) => s.rides);
-  const updateRide = useRidesStore((s) => s.updateRide);
-  const removeRide = useRidesStore((s) => s.removeRide);
+  const { rides, updateRide, removeRide } = useRides();
 
   const [platform, setPlatform] = useState<string>("all");
   const [minValue, setMinValue] = useState("");

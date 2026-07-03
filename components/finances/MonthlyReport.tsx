@@ -2,8 +2,8 @@
 
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useRidesStore } from "@/stores/ridesStore";
-import { useFinanceStore } from "@/stores/financeStore";
+import { useRides } from "@/hooks/useRides";
+import { useFinances } from "@/hooks/useFinances";
 import {
   buildMonthlyReport,
   expensesInRange,
@@ -24,9 +24,8 @@ const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
 };
 
 export function MonthlyReport() {
-  const rides = useRidesStore((s) => s.rides);
-  const expenses = useFinanceStore((s) => s.expenses);
-  const extraEarnings = useFinanceStore((s) => s.extraEarnings);
+  const { rides } = useRides();
+  const { expenses, extraEarnings } = useFinances();
 
   const report = useMemo(() => {
     const { start, end } = getPeriodRange("monthly");

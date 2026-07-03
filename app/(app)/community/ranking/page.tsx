@@ -8,7 +8,7 @@ import { RankingCard } from "@/components/community/RankingCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useCurrentProfile } from "@/stores/authStore";
+import { useCurrentProfile } from "@/providers/AuthProvider";
 import { generateRankingEntries } from "@/lib/mock-seed";
 
 const GROUPS = [

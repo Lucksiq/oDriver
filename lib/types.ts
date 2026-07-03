@@ -46,6 +46,7 @@ export interface Profile {
   showEarningsPublic: boolean;
   createdAt: string;
   onboardingComplete: boolean;
+  isAdmin: boolean;
 }
 
 export interface Ride {

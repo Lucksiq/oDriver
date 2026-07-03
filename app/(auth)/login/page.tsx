@@ -10,31 +10,71 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { loginSchema, type LoginInput } from "@/lib/schemas";
-import { useAuthStore } from "@/stores/authStore";
+import { createClient } from "@/lib/supabase/client";
+import { DEMO_EMAIL, DEMO_PASSWORD, seedDemoAccount } from "@/lib/demo-account";
 
 export default function LoginPage() {
   const router = useRouter();
-  const login = useAuthStore((s) => s.login);
-  const loginDemo = useAuthStore((s) => s.loginDemo);
+  const supabase = createClient();
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({ resolver: zodResolver(loginSchema) });
 
-  function onSubmit(data: LoginInput) {
-    const result = login(data);
-    if (!result.ok) {
-      toast.error(result.error);
+  async function onSubmit(data: LoginInput) {
+    const { error } = await supabase.auth.signInWithPassword(data);
+    if (error) {
+      toast.error(
+        error.message === "Invalid login credentials"
+          ? "E-mail ou senha incorretos"
+          : error.message,
+      );
       return;
     }
     router.push("/dashboard");
+    router.refresh();
   }
 
-  function onDemo() {
-    loginDemo();
+  async function onGoogle() {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (error) toast.error(error.message);
+  }
+
+  async function onDemo() {
+    let { error } = await supabase.auth.signInWithPassword({
+      email: DEMO_EMAIL,
+      password: DEMO_PASSWORD,
+    });
+
+    if (error?.message === "Invalid login credentials") {
+      const signUpResult = await supabase.auth.signUp({
+        email: DEMO_EMAIL,
+        password: DEMO_PASSWORD,
+        options: { data: { display_name: "Carlos Mendes" } },
+      });
+      error = signUpResult.error;
+      if (!error && signUpResult.data.session) {
+        await seedDemoAccount(supabase, signUpResult.data.session.user.id);
+      } else if (!error) {
+        toast.error(
+          "Conta demonstração criada, mas precisa de confirmação de e-mail neste projeto. Fale com quem configurou o Supabase.",
+        );
+        return;
+      }
+    }
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
     toast.success("Entrou com a conta demonstração");
     router.push("/dashboard");
+    router.refresh();
   }
 
   return (
@@ -62,14 +102,7 @@ export default function LoginPage() {
             Entrar
           </Button>
         </form>
-        <Button
-          variant="outline"
-          className="w-full"
-          size="lg"
-          onClick={() =>
-            toast.info("Integração com Google OAuth será configurada com o Supabase Auth")
-          }
-        >
+        <Button variant="outline" className="w-full" size="lg" onClick={onGoogle}>
           Continuar com Google
         </Button>
         <Button variant="ghost" className="w-full" onClick={onDemo}>

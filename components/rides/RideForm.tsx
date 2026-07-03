@@ -23,7 +23,7 @@ import {
   type RideDetailedFormValues,
   type RideDetailedInput,
 } from "@/lib/schemas";
-import { useRidesStore } from "@/stores/ridesStore";
+import { useRides } from "@/hooks/useRides";
 import type { Platform, RideType } from "@/lib/types";
 
 const PLATFORM_LABELS: Record<Platform, string> = {
@@ -41,7 +41,7 @@ const RIDE_TYPE_LABELS: Record<RideType, string> = {
 
 export function RideForm() {
   const router = useRouter();
-  const addRide = useRidesStore((s) => s.addRide);
+  const { addRide } = useRides();
   const [detailed, setDetailed] = useState(false);
   const {
     register,
@@ -53,7 +53,7 @@ export function RideForm() {
     defaultValues: { platform: "uber", rideType: "passenger" },
   });
 
-  function onSubmit(data: RideDetailedInput) {
+  async function onSubmit(data: RideDetailedInput) {
     let durationMinutes: number | undefined;
     if (data.startedAt && data.endedAt) {
       const diff =
@@ -61,7 +61,7 @@ export function RideForm() {
         60000;
       if (diff > 0) durationMinutes = Math.round(diff);
     }
-    addRide({
+    await addRide({
       platform: data.platform,
       amount: data.amount,
       distanceKm: data.distanceKm,

@@ -10,25 +10,42 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { registerSchema, type RegisterInput } from "@/lib/schemas";
-import { useAuthStore } from "@/stores/authStore";
+import { createClient } from "@/lib/supabase/client";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const registerAccount = useAuthStore((s) => s.register);
+  const supabase = createClient();
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<RegisterInput>({ resolver: zodResolver(registerSchema) });
 
-  function onSubmit(data: RegisterInput) {
-    const result = registerAccount(data);
-    if (!result.ok) {
-      toast.error(result.error);
+  async function onSubmit(data: RegisterInput) {
+    const { data: signUpData, error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: { data: { display_name: data.displayName } },
+    });
+
+    if (error) {
+      toast.error(
+        error.message === "User already registered"
+          ? "Já existe uma conta com este e-mail"
+          : error.message,
+      );
       return;
     }
+
+    if (!signUpData.session) {
+      toast.success("Conta criada! Confirme seu e-mail para continuar.");
+      router.push("/login");
+      return;
+    }
+
     toast.success("Conta criada! Vamos configurar seu perfil.");
     router.push("/onboarding");
+    router.refresh();
   }
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -9,9 +9,10 @@ import { EarningsCard } from "@/components/dashboard/EarningsCard";
 import { GoalProgressBar } from "@/components/dashboard/GoalProgressBar";
 import { WeeklyChart, type WeeklyChartPoint } from "@/components/dashboard/WeeklyChart";
 import { QuickAddButton } from "@/components/dashboard/QuickAddButton";
-import { useRidesStore } from "@/stores/ridesStore";
-import { useFinanceStore } from "@/stores/financeStore";
-import { useCurrentProfile } from "@/stores/authStore";
+import { useRides } from "@/hooks/useRides";
+import { useFinances } from "@/hooks/useFinances";
+import { useGoals } from "@/hooks/useGoals";
+import { useCurrentProfile } from "@/providers/AuthProvider";
 import {
   extraEarningsInRange,
   expensesInRange,
@@ -24,9 +25,9 @@ import {
 
 export default function DashboardPage() {
   const profile = useCurrentProfile();
-  const rides = useRidesStore((s) => s.rides);
-  const expenses = useFinanceStore((s) => s.expenses);
-  const extraEarnings = useFinanceStore((s) => s.extraEarnings);
+  const { rides, loading: ridesLoading } = useRides();
+  const { expenses, extraEarnings, loading: financeLoading } = useFinances();
+  const { recordDailyGoal } = useGoals();
 
   const summary = useMemo(() => {
     const now = new Date();
@@ -63,6 +64,11 @@ export default function DashboardPage() {
       ),
     };
   }, [rides, expenses, extraEarnings, profile]);
+
+  useEffect(() => {
+    if (!profile || ridesLoading || financeLoading) return;
+    recordDailyGoal(profile.dailyGoal, summary.today >= profile.dailyGoal);
+  }, [profile, ridesLoading, financeLoading, summary.today, recordDailyGoal]);
 
   const chartData: WeeklyChartPoint[] = useMemo(() => {
     const points: WeeklyChartPoint[] = [];

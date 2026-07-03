@@ -1,14 +1,6 @@
-import { addMinutes, startOfDay, subDays } from "date-fns";
+import { startOfDay, subDays } from "date-fns";
 import { DEMO_CITY, jitterNear } from "./geo";
-import type {
-  Expense,
-  ExtraEarning,
-  MapReport,
-  Post,
-  RankingEntry,
-  Ride,
-  VoiceChannel,
-} from "./types";
+import type { MapReport, Post, RankingEntry, VoiceChannel } from "./types";
 
 /** Deterministic PRNG so server and client render identical seed data (avoids hydration mismatch). */
 function mulberry32(seed: number) {
@@ -46,157 +38,12 @@ const DRIVER_NAMES = [
   "Vanessa Ramos",
 ];
 
-function generateRides(): Ride[] {
-  const rides: Ride[] = [];
-  const platforms: Ride["platform"][] = ["uber", "99", "ifood", "other"];
-
-  for (let daysAgo = 9; daysAgo >= 0; daysAgo--) {
-    const day = subDays(ANCHOR, daysAgo);
-    const targetCount = daysAgo === 0 ? 6 : Math.floor(range(2, 5));
-    let daySum = 0;
-    for (let i = 0; i < targetCount; i++) {
-      const amount = Number(range(9, 42).toFixed(2));
-      const startedAt = addMinutes(day, Math.floor(range(7 * 60, 22 * 60)));
-      const durationMinutes = Math.floor(range(8, 35));
-      rides.push({
-        id: `seed-ride-${daysAgo}-${i}`,
-        platform: pick(platforms),
-        amount,
-        distanceKm: Number(range(2, 18).toFixed(1)),
-        durationMinutes,
-        startedAt: startedAt.toISOString(),
-        endedAt: addMinutes(startedAt, durationMinutes).toISOString(),
-        rideType: rand() > 0.85 ? "delivery" : "passenger",
-        rating: Math.round(range(4, 5) * 10) / 10,
-        createdAt: startedAt.toISOString(),
-      });
-      daySum += amount;
-    }
-    // Ensure today comfortably clears the demo daily goal (R$ 200) for the badge/progress demo.
-    if (daysAgo === 0) {
-      let extra = 0;
-      while (daySum + extra < 230) {
-        const amount = Number(range(20, 38).toFixed(2));
-        extra += amount;
-        rides.push({
-          id: `seed-ride-boost-${rides.length}`,
-          platform: pick(platforms),
-          amount,
-          distanceKm: Number(range(3, 12).toFixed(1)),
-          durationMinutes: Math.floor(range(10, 25)),
-          startedAt: day.toISOString(),
-          rideType: "passenger",
-          createdAt: addMinutes(day, Math.floor(range(60, 20 * 60))).toISOString(),
-        });
-      }
-    }
-  }
-  return rides;
-}
-
-function generateExpenses(): Expense[] {
-  const expenses: Expense[] = [];
-  for (let daysAgo = 9; daysAgo >= 0; daysAgo -= 3) {
-    const day = subDays(ANCHOR, daysAgo);
-    const liters = Number(range(28, 38).toFixed(2));
-    const pricePerLiter = Number(range(5.79, 6.19).toFixed(2));
-    expenses.push({
-      id: `seed-fuel-${daysAgo}`,
-      category: "fuel",
-      subcategory: "gasolina",
-      amount: Number((liters * pricePerLiter).toFixed(2)),
-      liters,
-      pricePerLiter,
-      description: "Abastecimento",
-      occurredAt: addMinutes(day, 8 * 60).toISOString(),
-      createdAt: addMinutes(day, 8 * 60).toISOString(),
-    });
-  }
-  expenses.push({
-    id: "seed-maintenance-1",
-    category: "maintenance",
-    subcategory: "troca de óleo",
-    amount: 180,
-    description: "Troca de óleo + filtro",
-    occurredAt: subDays(ANCHOR, 6).toISOString(),
-    createdAt: subDays(ANCHOR, 6).toISOString(),
-  });
-  expenses.push({
-    id: "seed-maintenance-2",
-    category: "maintenance",
-    subcategory: "lavagem",
-    amount: 35,
-    description: "Lava-rápido",
-    occurredAt: subDays(ANCHOR, 2).toISOString(),
-    createdAt: subDays(ANCHOR, 2).toISOString(),
-  });
-  expenses.push({
-    id: "seed-tax-1",
-    category: "tax",
-    subcategory: "seguro",
-    amount: 22.5,
-    description: "Rateio diário do seguro",
-    occurredAt: subDays(ANCHOR, 1).toISOString(),
-    createdAt: subDays(ANCHOR, 1).toISOString(),
-  });
-  for (let daysAgo = 8; daysAgo >= 0; daysAgo -= 4) {
-    expenses.push({
-      id: `seed-food-${daysAgo}`,
-      category: "food",
-      amount: Number(range(15, 32).toFixed(2)),
-      description: "Almoço",
-      occurredAt: subDays(ANCHOR, daysAgo).toISOString(),
-      createdAt: subDays(ANCHOR, daysAgo).toISOString(),
-    });
-  }
-  return expenses;
-}
-
-function generateExtraEarnings(): ExtraEarning[] {
-  return [
-    {
-      id: "seed-tip-1",
-      category: "tip",
-      amount: 10,
-      description: "Gorjeta em dinheiro",
-      occurredAt: subDays(ANCHOR, 1).toISOString(),
-    },
-    {
-      id: "seed-bonus-1",
-      category: "bonus",
-      amount: 45,
-      description: "Bônus de pico Uber",
-      occurredAt: subDays(ANCHOR, 3).toISOString(),
-    },
-    {
-      id: "seed-tip-2",
-      category: "tip",
-      amount: 6,
-      description: "Gorjeta em dinheiro",
-      occurredAt: subDays(ANCHOR, 5).toISOString(),
-    },
-  ];
-}
-
+/** Shape of a row in the real `goals` table, also used by the Goals UI. */
 export interface GoalHistoryEntry {
   id: string;
   date: string;
   amount: number;
   achieved: boolean;
-}
-
-function generateGoalsHistory(): GoalHistoryEntry[] {
-  const entries: GoalHistoryEntry[] = [];
-  for (let daysAgo = 13; daysAgo >= 0; daysAgo--) {
-    const achieved = daysAgo <= 6 ? true : rand() > 0.4;
-    entries.push({
-      id: `seed-goal-${daysAgo}`,
-      date: subDays(ANCHOR, daysAgo).toISOString(),
-      amount: 200,
-      achieved,
-    });
-  }
-  return entries;
 }
 
 function generatePosts(): Post[] {
@@ -312,9 +159,5 @@ export function generateVoiceChannels(): VoiceChannel[] {
   ];
 }
 
-export const seedRides = generateRides();
-export const seedExpenses = generateExpenses();
-export const seedExtraEarnings = generateExtraEarnings();
-export const seedGoalsHistory = generateGoalsHistory();
 export const seedPosts = generatePosts();
 export const seedMapReports = generateMapReports();

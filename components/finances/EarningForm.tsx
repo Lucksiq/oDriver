@@ -18,7 +18,7 @@ import {
   type ExtraEarningFormValues,
   type ExtraEarningInput,
 } from "@/lib/schemas";
-import { useFinanceStore } from "@/stores/financeStore";
+import { useFinances } from "@/hooks/useFinances";
 import type { ExtraEarningCategory } from "@/lib/types";
 
 const CATEGORY_LABELS: Record<ExtraEarningCategory, string> = {
@@ -28,7 +28,7 @@ const CATEGORY_LABELS: Record<ExtraEarningCategory, string> = {
 };
 
 export function EarningForm({ onDone }: { onDone?: () => void }) {
-  const addExtraEarning = useFinanceStore((s) => s.addExtraEarning);
+  const { addExtraEarning } = useFinances();
   const {
     register,
     handleSubmit,
@@ -39,8 +39,8 @@ export function EarningForm({ onDone }: { onDone?: () => void }) {
     defaultValues: { category: "tip" },
   });
 
-  function onSubmit(data: ExtraEarningInput) {
-    addExtraEarning({
+  async function onSubmit(data: ExtraEarningInput) {
+    await addExtraEarning({
       category: data.category,
       amount: data.amount,
       description: data.description,

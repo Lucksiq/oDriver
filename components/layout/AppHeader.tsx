@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { useCurrentProfile } from "@/stores/authStore";
+import { useCurrentProfile } from "@/providers/AuthProvider";
 
 export function AppHeader() {
   const profile = useCurrentProfile();

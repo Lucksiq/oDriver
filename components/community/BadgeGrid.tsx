@@ -6,17 +6,17 @@ import { cn } from "@/lib/utils";
 import { BADGES, computeEarnedBadges } from "@/lib/badges";
 import { generateRankingEntries } from "@/lib/mock-seed";
 import { getPeriodRange, grossEarnings, extraEarningsInRange, ridesInRange } from "@/lib/calculations";
-import { useCurrentProfile } from "@/stores/authStore";
-import { useRidesStore } from "@/stores/ridesStore";
-import { useFinanceStore } from "@/stores/financeStore";
-import { useGoalsStore } from "@/stores/goalsStore";
+import { useCurrentProfile } from "@/providers/AuthProvider";
+import { useRides } from "@/hooks/useRides";
+import { useFinances } from "@/hooks/useFinances";
+import { useGoals } from "@/hooks/useGoals";
 import { useMapStore } from "@/stores/mapStore";
 
 export function BadgeGrid() {
   const profile = useCurrentProfile();
-  const rides = useRidesStore((s) => s.rides);
-  const extraEarnings = useFinanceStore((s) => s.extraEarnings);
-  const history = useGoalsStore((s) => s.history);
+  const { rides } = useRides();
+  const { extraEarnings } = useFinances();
+  const { history } = useGoals();
   const myReportsCount = useMapStore((s) => s.myReportsCount);
   const [now] = useState(() => new Date());
 

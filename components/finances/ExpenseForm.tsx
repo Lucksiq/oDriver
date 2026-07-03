@@ -18,7 +18,7 @@ import {
   type ExpenseFormValues,
   type ExpenseInput,
 } from "@/lib/schemas";
-import { useFinanceStore } from "@/stores/financeStore";
+import { useFinances } from "@/hooks/useFinances";
 import type { ExpenseCategory } from "@/lib/types";
 
 const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
@@ -31,7 +31,7 @@ const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
 };
 
 export function ExpenseForm({ onDone }: { onDone?: () => void }) {
-  const addExpense = useFinanceStore((s) => s.addExpense);
+  const { addExpense } = useFinances();
   const {
     register,
     handleSubmit,
@@ -44,8 +44,8 @@ export function ExpenseForm({ onDone }: { onDone?: () => void }) {
   });
   const category = watch("category");
 
-  function onSubmit(data: ExpenseInput) {
-    addExpense({
+  async function onSubmit(data: ExpenseInput) {
+    await addExpense({
       category: data.category,
       subcategory: data.subcategory,
       amount: data.amount,

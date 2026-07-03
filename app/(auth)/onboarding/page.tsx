@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useAuthStore } from "@/stores/authStore";
+import { createClient } from "@/lib/supabase/client";
 import type { Platform } from "@/lib/types";
 
 const PLATFORM_OPTIONS: { value: Platform; label: string }[] = [
@@ -21,7 +21,7 @@ const PLATFORM_OPTIONS: { value: Platform; label: string }[] = [
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const completeOnboarding = useAuthStore((s) => s.completeOnboarding);
+  const supabase = createClient();
   const [step, setStep] = useState(1);
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [city, setCity] = useState("");
@@ -34,7 +34,7 @@ export default function OnboardingPage() {
     );
   }
 
-  function next() {
+  async function next() {
     if (step === 1 && platforms.length === 0) {
       toast.error("Selecione ao menos uma plataforma");
       return;
@@ -52,9 +52,31 @@ export default function OnboardingPage() {
       toast.error("Informe uma meta diária válida");
       return;
     }
-    completeOnboarding({ platforms, city, state, dailyGoal: goal });
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("Sessão expirada, faça login novamente");
+      router.push("/login");
+      return;
+    }
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        platforms,
+        city,
+        state,
+        daily_goal: goal,
+        onboarding_complete: true,
+      })
+      .eq("id", user.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Tudo pronto! Bem-vindo ao oDriver.");
     router.push("/dashboard");
+    router.refresh();
   }
 
   return (

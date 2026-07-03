@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ExpenseForm } from "@/components/finances/ExpenseForm";
 import { EarningForm } from "@/components/finances/EarningForm";
 import { MonthlyReport } from "@/components/finances/MonthlyReport";
-import { useFinanceStore } from "@/stores/financeStore";
+import { useFinances } from "@/hooks/useFinances";
 import { formatCurrency } from "@/lib/calculations";
 import type { ExpenseCategory, ExtraEarningCategory } from "@/lib/types";
 
@@ -41,10 +41,8 @@ export default function FinancesPage() {
 
 function FinancesPageContent() {
   const searchParams = useSearchParams();
-  const expenses = useFinanceStore((s) => s.expenses);
-  const extraEarnings = useFinanceStore((s) => s.extraEarnings);
-  const removeExpense = useFinanceStore((s) => s.removeExpense);
-  const removeExtraEarning = useFinanceStore((s) => s.removeExtraEarning);
+  const { expenses, extraEarnings, removeExpense, removeExtraEarning } =
+    useFinances();
 
   const [expenseOpen, setExpenseOpen] = useState(
     () => searchParams.get("add") === "expense",

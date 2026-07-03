@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCommunityStore } from "@/stores/communityStore";
-import { useCurrentProfile } from "@/stores/authStore";
+import { useCurrentProfile } from "@/providers/AuthProvider";
 import type { PostType } from "@/lib/types";
 
 const TYPE_LABELS: Record<PostType, string> = {

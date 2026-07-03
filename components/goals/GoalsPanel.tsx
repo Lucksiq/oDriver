@@ -14,10 +14,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { GoalProgressBar } from "@/components/dashboard/GoalProgressBar";
-import { useRidesStore } from "@/stores/ridesStore";
-import { useFinanceStore } from "@/stores/financeStore";
-import { useGoalsStore } from "@/stores/goalsStore";
-import { useAuthStore, useCurrentProfile } from "@/stores/authStore";
+import { useRides } from "@/hooks/useRides";
+import { useFinances } from "@/hooks/useFinances";
+import { useGoals } from "@/hooks/useGoals";
+import { useAuth } from "@/providers/AuthProvider";
 import {
   extraEarningsInRange,
   getPeriodRange,
@@ -34,11 +34,10 @@ const PERIOD_LABELS: Record<GoalType, string> = {
 };
 
 export function GoalsPanel() {
-  const profile = useCurrentProfile();
-  const updateProfile = useAuthStore((s) => s.updateProfile);
-  const rides = useRidesStore((s) => s.rides);
-  const extraEarnings = useFinanceStore((s) => s.extraEarnings);
-  const history = useGoalsStore((s) => s.history);
+  const { profile, updateProfile } = useAuth();
+  const { rides } = useRides();
+  const { extraEarnings } = useFinances();
+  const { history } = useGoals();
 
   const [editing, setEditing] = useState<GoalType | null>(null);
   const [value, setValue] = useState("");
@@ -79,7 +78,7 @@ export function GoalsPanel() {
     setEditing(type);
   }
 
-  function saveEdit() {
+  async function saveEdit() {
     if (!editing) return;
     const amount = Number(value.replace(",", "."));
     if (Number.isNaN(amount) || amount <= 0) {
@@ -88,11 +87,15 @@ export function GoalsPanel() {
     }
     const field =
       editing === "daily"
-        ? "dailyGoal"
+        ? "daily_goal"
         : editing === "weekly"
-          ? "weeklyGoal"
-          : "monthlyGoal";
-    updateProfile({ [field]: amount });
+          ? "weekly_goal"
+          : "monthly_goal";
+    const result = await updateProfile({ [field]: amount });
+    if (!result.ok) {
+      toast.error(result.error);
+      return;
+    }
     toast.success("Meta atualizada");
     setEditing(null);
   }

@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useVoiceStore } from "@/stores/voiceStore";
-import { useCurrentProfile } from "@/stores/authStore";
+import { useCurrentProfile } from "@/providers/AuthProvider";
 
 function initialsOf(name: string) {
   return name

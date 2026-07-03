@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -11,13 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { BadgeGrid } from "@/components/community/BadgeGrid";
-import { useAuthStore, useCurrentProfile } from "@/stores/authStore";
+import { useAuth } from "@/providers/AuthProvider";
 
 export default function ProfilePage() {
-  const router = useRouter();
-  const profile = useCurrentProfile();
-  const updateProfile = useAuthStore((s) => s.updateProfile);
-  const logout = useAuthStore((s) => s.logout);
+  const { profile, updateProfile, logout } = useAuth();
   const { theme, setTheme } = useTheme();
 
   const initials = (profile?.displayName ?? "?")
@@ -26,11 +22,6 @@ export default function ProfilePage() {
     .map((p) => p[0])
     .join("")
     .toUpperCase();
-
-  function handleLogout() {
-    logout();
-    router.push("/login");
-  }
 
   return (
     <div className="space-y-4">
@@ -115,7 +106,7 @@ export default function ProfilePage() {
             <span className="text-sm font-medium">Mostrar ganhos no ranking público</span>
             <Switch
               checked={profile?.showEarningsPublic ?? false}
-              onCheckedChange={(v) => updateProfile({ showEarningsPublic: v })}
+              onCheckedChange={(v) => updateProfile({ show_earnings_public: v })}
             />
           </div>
           <div className="flex items-center justify-between">
@@ -125,7 +116,13 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
-      <Button variant="outline" className="w-full text-destructive" onClick={handleLogout}>
+      {profile?.isAdmin && (
+        <Button render={<Link href="/admin" />} nativeButton={false} variant="outline" className="w-full">
+          Painel Admin
+        </Button>
+      )}
+
+      <Button variant="outline" className="w-full text-destructive" onClick={logout}>
         Sair da conta
       </Button>
     </div>
