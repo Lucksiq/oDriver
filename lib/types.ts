@@ -145,12 +145,3 @@ export interface Badge {
   emoji: string;
   description: string;
 }
-
-export interface VoiceChannel {
-  id: string;
-  name: string;
-  topic: string;
-  city?: string;
-  isPrivate: boolean;
-  membersOnline: string[];
-}

@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { StoreHydrator } from "@/components/StoreHydrator";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -52,7 +51,6 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <StoreHydrator />
           {children}
           <Toaster position="top-center" richColors />
         </ThemeProvider>
