@@ -66,6 +66,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "expenses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_stats"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       extra_earnings: {
@@ -107,6 +114,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "extra_earnings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_stats"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -158,6 +172,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_stats"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -212,6 +233,112 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "map_reports_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      post_reactions: {
+        Row: {
+          post_id: string
+          reaction: string
+          user_id: string
+        }
+        Insert: {
+          post_id: string
+          reaction: string
+          user_id: string
+        }
+        Update: {
+          post_id?: string
+          reaction?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          city: string | null
+          content: string
+          created_at: string
+          id: string
+          reactions: Json
+          type: string
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          reactions?: Json
+          type?: string
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          reactions?: Json
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_stats"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -330,6 +457,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "rides_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_stats"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
     }
@@ -351,10 +485,23 @@ export type Database = {
         }
         Relationships: []
       }
+      ranking_stats: {
+        Row: {
+          city: string | null
+          display_name: string | null
+          user_id: string | null
+          weekly_earnings: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       confirm_map_report: { Args: { report_id: string }; Returns: undefined }
       is_admin: { Args: never; Returns: boolean }
+      react_to_post: {
+        Args: { p_post_id: string; p_reaction: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

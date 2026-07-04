@@ -24,9 +24,12 @@ OPENWEATHER_API_KEY=
 
 ## Estado atual
 
-**Autenticação, dados financeiros, admin e mapa são reais**, com Supabase Postgres + Supabase Auth + TomTom Maps:
+**Autenticação, dados financeiros, admin, mapa e comunidade são reais**, com Supabase Postgres + Supabase Auth + TomTom Maps:
 
-- `profiles`, `rides`, `expenses`, `extra_earnings`, `goals` e `map_reports` são tabelas reais com RLS — ver `supabase/migrations/`. As financeiras são owner-only; `map_reports` é intencionalmente pública (dado de comunidade, como no Waze), com Realtime habilitado.
+- `profiles`, `rides`, `expenses`, `extra_earnings`, `goals`, `map_reports`, `posts` e `post_reactions` são tabelas reais com RLS — ver `supabase/migrations/`. As financeiras são owner-only; `map_reports` e `posts` são intencionalmente públicas (dado de comunidade, como no Waze), com Realtime habilitado.
+- **Feed da comunidade** (`hooks/useCommunityPosts.ts`) é real e compartilhado: posts e reações (👍/⚠️/🔥) ficam no Supabase, com Realtime. Cada usuário só pode ter uma reação por post (toggle, igual ao comportamento antigo mockado); a troca de reação passa pela função `react_to_post()` (SECURITY DEFINER), que mantém os contadores em `posts.reactions` consistentes.
+- **Ranking** (`hooks/useRankingStats.ts`) é real e agregado, com opt-in explícito: só aparecem motoristas que ativaram "Mostrar ganhos no ranking público" no Perfil. A view `public.ranking_stats` roda com privilégio de dono (ignora o RLS owner-only de `rides`/`extra_earnings` de propósito) mas só expõe a soma semanal de ganhos por usuário optado — nunca corridas individuais de terceiros. Os grupos de ranking (aba "Grupos") continuam com placeholder "em breve", fora do escopo desta rodada.
+- **Badges** (`components/community/BadgeGrid.tsx`) continuam calculadas no cliente a partir dos dados reais (corridas, metas, reports do mapa, posição no ranking, premium) — não há tabela `user_badges` ainda, já que não existe hoje nenhuma tela que precise mostrar conquistas de outro usuário.
 - Login/registro usam `supabase.auth.signUp` / `signInWithPassword`; um trigger em `auth.users` cria automaticamente o `profiles` correspondente.
 - `hooks/useRides.ts`, `hooks/useFinances.ts`, `hooks/useGoals.ts`, `hooks/useMapReports.ts` e `providers/AuthProvider.tsx` substituem os antigos stores de Zustand para esses domínios.
 - `profiles.is_admin` + RLS somente-leitura para admins + painel em `/admin` (`app/admin/page.tsx`) com estatísticas da plataforma e lista de usuários.
@@ -37,13 +40,13 @@ OPENWEATHER_API_KEY=
 
 **Ainda mockados no navegador** (Zustand + localStorage, `stores/`), fora do escopo desta rodada:
 
-- **Comunidade** (`stores/communityStore.ts`) — feed, reações, ranking.
+- **Grupos de ranking** — criar/entrar em grupos privados continua só com toast "em breve" na aba Grupos; a tabela `ranking_groups` do PRD ainda não foi criada.
 - **Canais de voz** (`stores/voiceStore.ts`, `components/voice/*`) — simula presença e "quem está falando", sem áudio real (sem LiveKit/Agora).
 - **Premium** (`app/(app)/premium`) — simula a assinatura direto no `profiles.is_premium`, sem Stripe.
 
 ## Próximos passos para produção
 
-1. Migrar comunidade/ranking/badges para tabelas reais com Supabase Realtime (ver PRD seção 8 para o schema completo dessas tabelas).
+1. Grupos privados de ranking (`ranking_groups`/`ranking_group_members` do PRD seção 8) — hoje só a aba "Grupos" com placeholder.
 2. Trocar `stores/voiceStore.ts` + `components/voice/*` por um client real (LiveKit ou Agora) — precisa de `LIVEKIT_API_KEY`/`LIVEKIT_API_SECRET`.
 3. Integrar Stripe na tela `app/(app)/premium`.
 4. Configurar o provedor Google no Supabase Auth (ver acima) se o login social for necessário.

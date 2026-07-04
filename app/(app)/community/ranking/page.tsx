@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { CommunityTabs } from "@/components/community/CommunityTabs";
@@ -9,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useCurrentProfile } from "@/providers/AuthProvider";
-import { generateRankingEntries } from "@/lib/mock-seed";
+import { useRankingStats } from "@/hooks/useRankingStats";
 
 const GROUPS = [
   { id: "1", name: "Turma da Uber SP", members: 34, metric: "Ganhos semanais" },
@@ -18,14 +17,11 @@ const GROUPS = [
 
 export default function RankingPage() {
   const profile = useCurrentProfile();
-  const entries = useMemo(
-    () => generateRankingEntries(profile?.displayName ?? "Você"),
-    [profile?.displayName],
-  );
+  const { entries } = useRankingStats();
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Ranking" subtitle="Ganhos semanais entre motoristas" />
+      <PageHeader title="Ranking" subtitle="Ganhos semanais entre motoristas que optaram por aparecer" />
       <CommunityTabs />
 
       <Tabs defaultValue="global">
@@ -42,12 +38,23 @@ export default function RankingPage() {
         </TabsList>
 
         <TabsContent value="global" className="space-y-2">
+          {entries.length === 0 && (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              Ninguém no ranking ainda. Ative &quot;Mostrar ganhos no ranking público&quot; no
+              seu perfil para aparecer aqui.
+            </p>
+          )}
           {entries.map((entry, i) => (
             <RankingCard key={entry.userId} entry={entry} position={i + 1} />
           ))}
         </TabsContent>
 
         <TabsContent value="city" className="space-y-2">
+          {entries.filter((e) => e.city === profile?.city || !profile?.city).length === 0 && (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              Ninguém da sua cidade no ranking ainda.
+            </p>
+          )}
           {entries
             .filter((e) => e.city === profile?.city || !profile?.city)
             .map((entry, i) => (

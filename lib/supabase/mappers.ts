@@ -5,7 +5,11 @@ import type {
   ExtraEarning,
   MapReport,
   Platform,
+  Post,
+  PostType,
   Profile,
+  RankingEntry,
+  ReactionKey,
   Ride,
 } from "@/lib/types";
 import type { GoalHistoryEntry } from "@/lib/mock-seed";
@@ -94,5 +98,35 @@ export function mapGoalRow(row: Tables<"goals">): GoalHistoryEntry {
     date: row.period_start,
     amount: Number(row.amount),
     achieved: row.achieved,
+  };
+}
+
+export function mapPostRow(
+  row: Tables<"posts"> & { profiles: { display_name: string | null } | null },
+  myReaction?: ReactionKey,
+): Post {
+  return {
+    id: row.id,
+    authorName: row.profiles?.display_name ?? "Motorista",
+    authorCity: row.city ?? "",
+    content: row.content,
+    type: row.type as PostType,
+    city: row.city ?? "",
+    reactions: row.reactions as Record<ReactionKey, number>,
+    myReaction,
+    createdAt: row.created_at,
+  };
+}
+
+export function mapRankingStatsRow(
+  row: Tables<"ranking_stats">,
+  currentUserId?: string,
+): RankingEntry {
+  return {
+    userId: row.user_id ?? "",
+    displayName: row.display_name ?? "Motorista",
+    city: row.city ?? "",
+    value: Number(row.weekly_earnings ?? 0),
+    isCurrentUser: row.user_id === currentUserId,
   };
 }

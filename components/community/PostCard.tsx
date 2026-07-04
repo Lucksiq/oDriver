@@ -2,7 +2,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useCommunityStore } from "@/stores/communityStore";
 import type { Post, PostType, ReactionKey } from "@/lib/types";
 
 const TYPE_META: Record<PostType, { label: string; className: string }> = {
@@ -19,8 +18,13 @@ const REACTIONS: { key: ReactionKey; emoji: string }[] = [
   { key: "hot", emoji: "🔥" },
 ];
 
-export function PostCard({ post }: { post: Post }) {
-  const react = useCommunityStore((s) => s.react);
+export function PostCard({
+  post,
+  onReact,
+}: {
+  post: Post;
+  onReact: (postId: string, reaction: ReactionKey) => void;
+}) {
   const meta = TYPE_META[post.type];
 
   return (
@@ -43,7 +47,7 @@ export function PostCard({ post }: { post: Post }) {
           {REACTIONS.map((r) => (
             <button
               key={r.key}
-              onClick={() => react(post.id, r.key)}
+              onClick={() => onReact(post.id, r.key)}
               className={`flex items-center gap-1 rounded-full border px-2 py-1 text-xs transition-colors ${
                 post.myReaction === r.key
                   ? "border-primary bg-accent text-accent-foreground"

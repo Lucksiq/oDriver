@@ -12,7 +12,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { useCommunityStore } from "@/stores/communityStore";
 import { useCurrentProfile } from "@/providers/AuthProvider";
 import type { PostType } from "@/lib/types";
 
@@ -24,9 +23,12 @@ const TYPE_LABELS: Record<PostType, string> = {
   general: "Geral",
 };
 
-export function PostComposer() {
+export function PostComposer({
+  onSubmit,
+}: {
+  onSubmit: (input: { content: string; type: PostType; city: string }) => void;
+}) {
   const profile = useCurrentProfile();
-  const addPost = useCommunityStore((s) => s.addPost);
   const [content, setContent] = useState("");
   const [type, setType] = useState<PostType>("general");
 
@@ -39,12 +41,7 @@ export function PostComposer() {
       toast.error("Máximo de 280 caracteres");
       return;
     }
-    addPost({
-      content,
-      type,
-      authorName: profile?.displayName ?? "Motorista",
-      city: profile?.city ?? "",
-    });
+    onSubmit({ content, type, city: profile?.city ?? "" });
     setContent("");
     toast.success("Publicado na comunidade");
   }
