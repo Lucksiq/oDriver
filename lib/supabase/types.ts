@@ -290,6 +290,114 @@ export type Database = {
           },
         ]
       }
+      ranking_group_members: {
+        Row: {
+          group_id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ranking_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ranking_group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ranking_group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ranking_group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      ranking_groups: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          invite_code: string
+          is_private: boolean
+          max_members: number
+          metric: string
+          name: string
+          owner_id: string
+          period: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          invite_code?: string
+          is_private?: boolean
+          max_members?: number
+          metric?: string
+          name: string
+          owner_id: string
+          period?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          invite_code?: string
+          is_private?: boolean
+          max_members?: number
+          metric?: string
+          name?: string
+          owner_id?: string
+          period?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ranking_groups_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ranking_groups_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ranking_groups_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       posts: {
         Row: {
           city: string | null
@@ -497,7 +605,56 @@ export type Database = {
     }
     Functions: {
       confirm_map_report: { Args: { report_id: string }; Returns: undefined }
+      create_ranking_group: {
+        Args: {
+          p_description: string | null
+          p_is_private: boolean
+          p_metric: string
+          p_name: string
+          p_period: string
+        }
+        Returns: {
+          created_at: string
+          description: string | null
+          id: string
+          invite_code: string
+          is_private: boolean
+          max_members: number
+          metric: string
+          name: string
+          owner_id: string
+          period: string
+        }
+      }
+      get_group_ranking: {
+        Args: { p_group_id: string }
+        Returns: {
+          city: string
+          display_name: string
+          user_id: string
+          value: number
+        }[]
+      }
       is_admin: { Args: never; Returns: boolean }
+      is_ranking_group_member: {
+        Args: { p_group_id: string }
+        Returns: boolean
+      }
+      join_ranking_group: {
+        Args: { p_invite_code: string }
+        Returns: {
+          created_at: string
+          description: string | null
+          id: string
+          invite_code: string
+          is_private: boolean
+          max_members: number
+          metric: string
+          name: string
+          owner_id: string
+          period: string
+        }
+      }
       react_to_post: {
         Args: { p_post_id: string; p_reaction: string }
         Returns: undefined

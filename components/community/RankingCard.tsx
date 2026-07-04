@@ -2,7 +2,15 @@ import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/calculations";
 import type { RankingEntry } from "@/lib/types";
 
-export function RankingCard({ entry, position }: { entry: RankingEntry; position: number }) {
+export function RankingCard({
+  entry,
+  position,
+  format = formatCurrency,
+}: {
+  entry: RankingEntry;
+  position: number;
+  format?: (value: number) => string;
+}) {
   return (
     <div
       className={cn(
@@ -27,7 +35,7 @@ export function RankingCard({ entry, position }: { entry: RankingEntry; position
           <p className="text-xs text-muted-foreground">{entry.city}</p>
         </div>
       </div>
-      <span className="font-bold tabular-nums">{formatCurrency(entry.value)}</span>
+      <span className="font-bold tabular-nums">{format(entry.value)}</span>
     </div>
   );
 }

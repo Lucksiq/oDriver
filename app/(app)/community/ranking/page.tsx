@@ -1,23 +1,48 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { CommunityTabs } from "@/components/community/CommunityTabs";
 import { RankingCard } from "@/components/community/RankingCard";
+import { CreateGroupDialog } from "@/components/community/CreateGroupDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useCurrentProfile } from "@/providers/AuthProvider";
 import { useRankingStats } from "@/hooks/useRankingStats";
+import { useRankingGroups } from "@/hooks/useRankingGroups";
 
-const GROUPS = [
-  { id: "1", name: "Turma da Uber SP", members: 34, metric: "Ganhos semanais" },
-  { id: "2", name: "iFood Zona Sul", members: 18, metric: "Corridas no mês" },
-];
+const METRIC_LABELS: Record<string, string> = {
+  earnings: "Ganhos",
+  rides: "Corridas",
+  profit: "Lucro",
+  km: "Quilômetros",
+};
+
+const PERIOD_LABELS: Record<string, string> = {
+  daily: "diário",
+  weekly: "semanal",
+  monthly: "mensal",
+  all_time: "todo o período",
+};
 
 export default function RankingPage() {
   const profile = useCurrentProfile();
   const { entries } = useRankingStats();
+  const { myGroups, discoverGroups, createGroup, joinGroup } = useRankingGroups();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [inviteCode, setInviteCode] = useState("");
+
+  async function handleJoin(code: string) {
+    const ok = await joinGroup(code);
+    if (ok) {
+      toast.success("Você entrou no grupo!");
+      setInviteCode("");
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -62,33 +87,72 @@ export default function RankingPage() {
             ))}
         </TabsContent>
 
-        <TabsContent value="groups" className="space-y-2">
-          {GROUPS.map((g) => (
-            <Card key={g.id}>
-              <CardContent className="flex items-center justify-between p-3">
-                <div>
-                  <p className="font-medium">{g.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {g.members} membros · {g.metric}
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => toast.info("Entrar em grupos estará disponível em breve")}
-                >
-                  Entrar
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => toast.info("Criação de grupos estará disponível em breve")}
-          >
+        <TabsContent value="groups" className="space-y-3">
+          <div className="flex gap-2">
+            <Input
+              placeholder="Código de convite"
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value)}
+            />
+            <Button variant="outline" onClick={() => handleJoin(inviteCode)}>
+              Entrar
+            </Button>
+          </div>
+
+          {myGroups.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground">Meus grupos</p>
+              {myGroups.map((g) => (
+                <Link key={g.id} href={`/community/ranking/groups/${g.id}`}>
+                  <Card>
+                    <CardContent className="flex items-center justify-between p-3">
+                      <div>
+                        <p className="font-medium">{g.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {g.memberCount} membros · {METRIC_LABELS[g.metric]} (
+                          {PERIOD_LABELS[g.period]})
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {discoverGroups.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground">Descobrir</p>
+              {discoverGroups.map((g) => (
+                <Card key={g.id}>
+                  <CardContent className="flex items-center justify-between p-3">
+                    <div>
+                      <p className="font-medium">{g.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {g.memberCount} membros · {METRIC_LABELS[g.metric]} (
+                        {PERIOD_LABELS[g.period]})
+                      </p>
+                    </div>
+                    <Button size="sm" variant="outline" onClick={() => handleJoin(g.inviteCode)}>
+                      Entrar
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {myGroups.length === 0 && discoverGroups.length === 0 && (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              Nenhum grupo ainda. Crie o primeiro ou entre com um código de convite.
+            </p>
+          )}
+
+          <Button variant="outline" className="w-full" onClick={() => setCreateOpen(true)}>
             Criar grupo
           </Button>
+
+          <CreateGroupDialog open={createOpen} onOpenChange={setCreateOpen} onCreate={createGroup} />
         </TabsContent>
       </Tabs>
     </div>

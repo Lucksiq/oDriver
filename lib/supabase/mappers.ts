@@ -9,6 +9,7 @@ import type {
   PostType,
   Profile,
   RankingEntry,
+  RankingGroup,
   ReactionKey,
   Ride,
 } from "@/lib/types";
@@ -127,6 +128,35 @@ export function mapRankingStatsRow(
     displayName: row.display_name ?? "Motorista",
     city: row.city ?? "",
     value: Number(row.weekly_earnings ?? 0),
+    isCurrentUser: row.user_id === currentUserId,
+  };
+}
+
+export function mapRankingGroupRow(
+  row: Tables<"ranking_groups"> & { ranking_group_members: { count: number }[] },
+): RankingGroup {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description ?? undefined,
+    isPrivate: row.is_private,
+    inviteCode: row.invite_code,
+    maxMembers: row.max_members,
+    metric: row.metric as RankingGroup["metric"],
+    period: row.period as RankingGroup["period"],
+    memberCount: row.ranking_group_members?.[0]?.count ?? 0,
+  };
+}
+
+export function mapGroupRankingEntryRow(
+  row: { user_id: string; display_name: string | null; city: string | null; value: number },
+  currentUserId?: string,
+): RankingEntry {
+  return {
+    userId: row.user_id,
+    displayName: row.display_name ?? "Motorista",
+    city: row.city ?? "",
+    value: Number(row.value ?? 0),
     isCurrentUser: row.user_id === currentUserId,
   };
 }
