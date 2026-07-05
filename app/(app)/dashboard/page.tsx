@@ -68,7 +68,25 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!profile || ridesLoading || financeLoading) return;
-    recordDailyGoal(profile.dailyGoal, summary.today >= profile.dailyGoal);
+    const isAchieved = profile.dailyGoal > 0 && summary.today >= profile.dailyGoal;
+    recordDailyGoal(profile.dailyGoal, isAchieved);
+
+    if (isAchieved) {
+      const today = new Date().toISOString().slice(0, 10);
+      const notifiedKey = `odriver-goal-notified-${today}`;
+      if (!localStorage.getItem(notifiedKey)) {
+        localStorage.setItem(notifiedKey, "1");
+        fetch("/api/push/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: "Meta batida! 🎯",
+            body: "Você atingiu sua meta diária de hoje. Bom trabalho!",
+            url: "/dashboard",
+          }),
+        }).catch(() => {});
+      }
+    }
   }, [profile, ridesLoading, financeLoading, summary.today, recordDailyGoal]);
 
   const chartData: WeeklyChartPoint[] = useMemo(() => {

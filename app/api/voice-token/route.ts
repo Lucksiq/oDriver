@@ -23,7 +23,13 @@ export async function POST(request: Request) {
     .eq("id", user.id)
     .single();
 
-  const token = await createVoiceToken(user.id, profile?.display_name ?? "Motorista", room);
+  // A unique identity per connection (not just per account) — otherwise two
+  // sessions on the same account (e.g. two testers both using the demo
+  // account) collide: LiveKit treats a duplicate identity joining a room as
+  // the same participant reconnecting, silently kicking the first connection
+  // instead of showing two people.
+  const identity = `${user.id}:${crypto.randomUUID()}`;
+  const token = await createVoiceToken(identity, profile?.display_name ?? "Motorista", room);
 
   return NextResponse.json({ token, url: process.env.LIVEKIT_URL });
 }

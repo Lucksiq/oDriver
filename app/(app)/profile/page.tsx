@@ -11,10 +11,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { BadgeGrid } from "@/components/community/BadgeGrid";
 import { useAuth } from "@/providers/AuthProvider";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 export default function ProfilePage() {
   const { profile, updateProfile, logout } = useAuth();
   const { theme, setTheme } = useTheme();
+  const push = usePushNotifications();
 
   const initials = (profile?.displayName ?? "?")
     .split(" ")
@@ -111,8 +113,30 @@ export default function ProfilePage() {
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Notificações de metas</span>
-            <Switch defaultChecked onCheckedChange={() => toast.info("Preferência salva")} />
+            <Switch
+              checked={push.subscribed}
+              disabled={!push.supported || push.loading}
+              onCheckedChange={(v) => {
+                if (v) {
+                  push.enable().then((ok) => {
+                    if (!ok) toast.error("Não foi possível ativar as notificações");
+                  });
+                } else {
+                  push.disable();
+                }
+              }}
+            />
           </div>
+          {!push.supported && (
+            <p className="text-xs text-muted-foreground">
+              Este navegador não suporta notificações push.
+            </p>
+          )}
+          {push.subscribed && (
+            <Button variant="outline" size="sm" className="w-full" onClick={push.sendTest}>
+              Enviar notificação de teste
+            </Button>
+          )}
         </CardContent>
       </Card>
 

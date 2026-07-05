@@ -11,7 +11,7 @@ npm run dev
 
 Abra [http://localhost:3000](http://localhost:3000). Use o botão **"Entrar com conta demonstração"** na tela de login para explorar o app já populado com dados de exemplo (o primeiro clique cria a conta demo de verdade no Supabase e a preenche com corridas/despesas de amostra).
 
-Você precisa de um `.env.local` com as credenciais do seu projeto Supabase, uma chave da TomTom Maps SDK, uma chave da OpenWeather API e um projeto LiveKit Cloud:
+Você precisa de um `.env.local` com as credenciais do seu projeto Supabase, uma chave da TomTom Maps SDK, uma chave da OpenWeather API, um projeto LiveKit Cloud e um par de chaves VAPID (Web Push):
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=
@@ -21,9 +21,11 @@ OPENWEATHER_API_KEY=
 LIVEKIT_URL=
 LIVEKIT_API_KEY=
 LIVEKIT_API_SECRET=
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
 ```
 
-`OPENWEATHER_API_KEY` e as variáveis `LIVEKIT_*` não têm o prefixo `NEXT_PUBLIC_` de propósito — nunca vão para o bundle do cliente. A OpenWeather é usada pela API route `app/api/weather/route.ts`; as do LiveKit são usadas por `lib/livekit.ts` para gerar tokens de acesso (`app/api/voice-token/route.ts`) e consultar contagem de participantes (`app/api/voice-rooms/route.ts`) — o navegador só recebe o token já assinado e a URL pública de WebSocket, nunca a API secret.
+`OPENWEATHER_API_KEY`, as variáveis `LIVEKIT_*` e `VAPID_PRIVATE_KEY` não têm o prefixo `NEXT_PUBLIC_` de propósito — nunca vão para o bundle do cliente. A OpenWeather é usada pela API route `app/api/weather/route.ts`; as do LiveKit são usadas por `lib/livekit.ts` para gerar tokens de acesso (`app/api/voice-token/route.ts`) e consultar contagem de participantes (`app/api/voice-rooms/route.ts`) — o navegador só recebe o token já assinado e a URL pública de WebSocket, nunca a API secret. `VAPID_PRIVATE_KEY` só é usada por `app/api/push/send/route.ts` para assinar notificações push. Gere seu próprio par de chaves VAPID com `npx web-push generate-vapid-keys` — é um protocolo padrão do navegador, não precisa de conta em nenhum serviço externo.
 
 ## Estado atual
 
@@ -42,6 +44,7 @@ LIVEKIT_API_SECRET=
 - **Login com Google** está com o botão funcional (`signInWithOAuth`), mas só funciona depois de configurar o provedor Google no dashboard do Supabase (Authentication → Providers → Google) com um client OAuth do Google Cloud Console — isso é uma configuração manual, não automatizável por aqui.
 - Por padrão, novos projetos Supabase exigem confirmação de e-mail antes do primeiro login funcionar. Se estiver testando localmente sem um provedor de e-mail configurado, desative "Confirm email" em Authentication → Sign In / Providers → Email.
 - **Canais de voz** (`hooks/useVoiceRoom.ts`, `components/voice/*`) usam LiveKit de verdade: 4 canais fixos (por enquanto — `lib/voice-channels.ts`), entrar/sair com áudio real via WebRTC, indicador de quem está falando (detecção real de nível de áudio do LiveKit, não mais simulado), push-to-talk, silenciar microfone. `app/api/voice-token/route.ts` gera um token de acesso assinado no servidor (nunca expõe `LIVEKIT_API_SECRET` ao cliente) e valida o canal contra a lista fixa antes de emitir o token; `app/api/voice-rooms/route.ts` expõe a contagem de participantes online por canal via `RoomServiceClient`.
+- **Notificações push** (`hooks/usePushNotifications.ts`, `public/sw.js`) são reais via Web Push — sem depender de nenhum serviço de terceiros além do próprio navegador. O toggle "Notificações de metas" no Perfil registra o service worker, pede permissão e salva a inscrição (endpoint + chaves) em `push_subscriptions` (RLS owner-only). O envio (`app/api/push/send/route.ts`) é o único ponto que usa `VAPID_PRIVATE_KEY`, e hoje dispara em dois casos: botão "Enviar notificação de teste" no Perfil, e automaticamente quando o dashboard detecta que a meta diária acabou de ser batida (no máximo uma vez por dia, guardado via `localStorage`).
 
 **Ainda mockado** — fora do escopo desta rodada:
 
@@ -53,7 +56,8 @@ LIVEKIT_API_SECRET=
 2. Configurar o provedor Google no Supabase Auth (ver acima) se o login social for necessário.
 3. `@tomtom-international/web-sdk-maps` está descontinuado pela TomTom em favor do `@tomtom-org/maps-sdk` (API bem diferente, baseada em módulos) — vale reavaliar a migração quando o novo pacote atingir 1.0 e tiver documentação madura.
 4. Canais de voz privados para grupos de ranking (Premium, PRD seção 4.7) e histórico de quem passou pelo canal nas últimas 24h — ambos exigiriam armazenar eventos de presença (webhooks do LiveKit), fora do escopo desta rodada.
+5. Mais gatilhos de notificação push além de "meta batida" (ex: alertas inteligentes de gasto com combustível, comparativo com a comunidade — depende dos Insights de IA da Fase 2 do PRD) e um job agendado (cron) para lembretes que não dependam do app estar aberto no navegador.
 
 ## Stack
 
-Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · shadcn/ui · Supabase (Postgres + Auth + Realtime) · TomTom Maps (`@tomtom-international/web-sdk-maps`) · LiveKit (`livekit-client` + `livekit-server-sdk`) · React Hook Form + Zod · Recharts · next-themes.
+Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · shadcn/ui · Supabase (Postgres + Auth + Realtime) · TomTom Maps (`@tomtom-international/web-sdk-maps`) · LiveKit (`livekit-client` + `livekit-server-sdk`) · Web Push (`web-push`) · React Hook Form + Zod · Recharts · next-themes.
