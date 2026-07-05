@@ -14,6 +14,7 @@ import type {
   Ride,
 } from "@/lib/types";
 import type { GoalHistoryEntry } from "@/lib/mock-seed";
+import type { VoiceChannel, VoiceMessage } from "@/lib/voice-channels";
 
 export function mapProfileRow(row: Tables<"profiles">, user: User): Profile {
   return {
@@ -145,6 +146,35 @@ export function mapRankingGroupRow(
     metric: row.metric as RankingGroup["metric"],
     period: row.period as RankingGroup["period"],
     memberCount: row.ranking_group_members?.[0]?.count ?? 0,
+  };
+}
+
+export function mapVoiceChannelRow(row: Tables<"voice_channels">): VoiceChannel {
+  return {
+    id: row.id,
+    name: row.name,
+    topic: row.topic ?? undefined,
+    city: row.city ?? undefined,
+    ownerId: row.owner_id,
+    isPrivate: row.is_private,
+    inviteCode: row.invite_code,
+    createdAt: row.created_at,
+  };
+}
+
+export function mapVoiceMessageRow(
+  row: Tables<"voice_messages"> & { profiles: { display_name: string | null } | null },
+): VoiceMessage {
+  return {
+    id: row.id,
+    channelId: row.channel_id,
+    authorId: row.user_id,
+    authorName: row.profiles?.display_name ?? "Motorista",
+    audioData: row.audio_data,
+    mimeType: row.mime_type,
+    durationSeconds: row.duration_seconds !== null ? Number(row.duration_seconds) : undefined,
+    createdAt: row.created_at,
+    expiresAt: row.expires_at,
   };
 }
 

@@ -1,33 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { CommunityTabs } from "@/components/community/CommunityTabs";
 import { ChannelList } from "@/components/voice/ChannelList";
-import { VoiceChannelBar } from "@/components/voice/VoiceChannelBar";
-import { useVoiceRoom } from "@/hooks/useVoiceRoom";
+import { VoiceMessageBoard } from "@/components/voice/VoiceMessageBoard";
+import type { VoiceChannel } from "@/lib/voice-channels";
 
 export default function VoicePage() {
-  const voice = useVoiceRoom();
+  const [activeChannel, setActiveChannel] = useState<VoiceChannel | null>(null);
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Canais de voz" subtitle="Converse com motoristas ao vivo" />
+      <PageHeader title="Canais de voz" subtitle="Áudios rápidos entre motoristas" />
       <CommunityTabs />
-      {voice.channelId && (
-        <VoiceChannelBar
-          channelId={voice.channelId}
-          participants={voice.participants}
-          muted={voice.muted}
-          onLeave={voice.leave}
-          onToggleMute={voice.toggleMute}
-          onSetMicEnabled={voice.setMicEnabled}
-        />
+      {activeChannel ? (
+        <VoiceMessageBoard channel={activeChannel} onLeave={() => setActiveChannel(null)} />
+      ) : (
+        <ChannelList onOpen={setActiveChannel} />
       )}
-      <ChannelList
-        joinedChannelId={voice.channelId}
-        connecting={voice.connecting}
-        onJoin={voice.join}
-      />
     </div>
   );
 }

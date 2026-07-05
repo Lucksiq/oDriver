@@ -14,6 +14,170 @@ export type Database = {
   }
   public: {
     Tables: {
+      voice_channels: {
+        Row: {
+          city: string | null
+          created_at: string
+          id: string
+          invite_code: string
+          is_private: boolean
+          name: string
+          owner_id: string
+          topic: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          id?: string
+          invite_code?: string
+          is_private?: boolean
+          name: string
+          owner_id: string
+          topic?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          id?: string
+          invite_code?: string
+          is_private?: boolean
+          name?: string
+          owner_id?: string
+          topic?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_channels_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_channels_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_channels_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      voice_channel_members: {
+        Row: {
+          channel_id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_channel_members_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "voice_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_channel_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_channel_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_channel_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      voice_messages: {
+        Row: {
+          audio_data: string
+          channel_id: string
+          created_at: string
+          duration_seconds: number | null
+          expires_at: string
+          id: string
+          mime_type: string
+          user_id: string
+        }
+        Insert: {
+          audio_data: string
+          channel_id: string
+          created_at?: string
+          duration_seconds?: number | null
+          expires_at?: string
+          id?: string
+          mime_type?: string
+          user_id: string
+        }
+        Update: {
+          audio_data?: string
+          channel_id?: string
+          created_at?: string
+          duration_seconds?: number | null
+          expires_at?: string
+          id?: string
+          mime_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_messages_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "voice_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       expenses: {
         Row: {
           amount: number
@@ -653,6 +817,7 @@ export type Database = {
       }
     }
     Functions: {
+      cleanup_expired_voice_messages: { Args: never; Returns: undefined }
       confirm_map_report: { Args: { report_id: string }; Returns: undefined }
       create_ranking_group: {
         Args: {
@@ -674,6 +839,41 @@ export type Database = {
           owner_id: string
           period: string
         }
+      }
+      create_voice_channel: {
+        Args: {
+          p_city: string | null
+          p_is_private: boolean
+          p_name: string
+          p_topic: string | null
+        }
+        Returns: {
+          city: string | null
+          created_at: string
+          id: string
+          invite_code: string
+          is_private: boolean
+          name: string
+          owner_id: string
+          topic: string | null
+        }
+      }
+      join_voice_channel: {
+        Args: { p_invite_code: string }
+        Returns: {
+          city: string | null
+          created_at: string
+          id: string
+          invite_code: string
+          is_private: boolean
+          name: string
+          owner_id: string
+          topic: string | null
+        }
+      }
+      is_voice_channel_member: {
+        Args: { p_channel_id: string }
+        Returns: boolean
       }
       get_group_ranking: {
         Args: { p_group_id: string }
