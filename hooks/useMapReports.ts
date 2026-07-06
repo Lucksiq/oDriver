@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useState } from "react";
+import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { mapMapReportRow } from "@/lib/supabase/mappers";
 import { useAuth } from "@/providers/AuthProvider";
@@ -72,7 +73,11 @@ export function useMapReports() {
   }
 
   async function voteReport(id: string, vote: MapReportVote) {
-    await supabase.rpc("vote_map_report", { p_report_id: id, p_vote: vote });
+    const { error } = await supabase.rpc("vote_map_report", { p_report_id: id, p_vote: vote });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     await refresh();
   }
 

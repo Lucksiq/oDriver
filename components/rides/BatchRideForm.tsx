@@ -123,6 +123,9 @@ export function BatchRideForm() {
               placeholder="Opcional"
               {...register("totalCosts")}
             />
+            {errors.totalCosts && (
+              <p className="text-sm text-destructive">{errors.totalCosts.message}</p>
+            )}
           </div>
 
           <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>

@@ -15,6 +15,7 @@ import {
 } from "@/hooks/useAudioRecorder";
 import { useAuth } from "@/providers/AuthProvider";
 import { base64ToObjectUrl, blobToBase64, formatDuration } from "@/lib/audio";
+import { canModerate } from "@/lib/permissions";
 import type { VoiceChannel, VoiceMessage } from "@/lib/voice-channels";
 
 function initialsOf(name: string) {
@@ -144,7 +145,7 @@ export function VoiceMessageBoard({
             <MessageBubble
               key={m.id}
               message={m}
-              isOwn={m.authorId === user?.id || profile?.isAdmin === true}
+              isOwn={canModerate(profile, m.authorId, user?.id)}
               onDelete={deleteMessage}
             />
           ))}

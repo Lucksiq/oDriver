@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useVoiceChannels } from "@/hooks/useVoiceChannels";
 import { useAuth } from "@/providers/AuthProvider";
 import { CreateVoiceChannelDialog } from "@/components/voice/CreateVoiceChannelDialog";
+import { canModerate } from "@/lib/permissions";
 import type { VoiceChannel } from "@/lib/voice-channels";
 
 export function ChannelList({ onOpen }: { onOpen: (channel: VoiceChannel) => void }) {
@@ -43,7 +44,7 @@ export function ChannelList({ onOpen }: { onOpen: (channel: VoiceChannel) => voi
   }
 
   function renderChannel(channel: VoiceChannel, mine: boolean) {
-    const canRemove = channel.ownerId === user?.id || profile?.isAdmin === true;
+    const canRemove = canModerate(profile, channel.ownerId, user?.id);
     return (
       <Card key={channel.id}>
         <CardContent className="flex items-center justify-between gap-3 p-3">

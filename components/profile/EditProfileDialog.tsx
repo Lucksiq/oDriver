@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -41,6 +41,7 @@ export function EditProfileDialog({
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<EditProfileFormValues, unknown, EditProfileInput>({
     resolver: zodResolver(editProfileSchema),
@@ -51,8 +52,28 @@ export function EditProfileDialog({
       city: profile?.city ?? "",
       state: profile?.state ?? "",
       newPassword: "",
+      confirmNewPassword: "",
     },
   });
+
+  useEffect(() => {
+    // The dialog stays mounted the whole time (its `open` prop just toggles
+    // visibility), so form state from a previous open/edit/save cycle would
+    // otherwise linger — reset it to the current profile every time it opens.
+    if (!open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPlatforms(profile?.platforms ?? []);
+    reset({
+      displayName: profile?.displayName ?? "",
+      email: user?.email ?? "",
+      phone: profile?.phone ? formatPhone(profile.phone) : "",
+      city: profile?.city ?? "",
+      state: profile?.state ?? "",
+      newPassword: "",
+      confirmNewPassword: "",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   function togglePlatform(p: Platform) {
     setPlatforms((prev) => (prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]));
@@ -142,6 +163,18 @@ export function EditProfileDialog({
             <Input id="edit-newPassword" type="password" placeholder="Deixe em branco para manter a atual" {...register("newPassword")} />
             {errors.newPassword && (
               <p className="text-sm text-destructive">{errors.newPassword.message}</p>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="edit-confirmNewPassword">Confirmar nova senha</Label>
+            <Input
+              id="edit-confirmNewPassword"
+              type="password"
+              placeholder="Repita a nova senha"
+              {...register("confirmNewPassword")}
+            />
+            {errors.confirmNewPassword && (
+              <p className="text-sm text-destructive">{errors.confirmNewPassword.message}</p>
             )}
           </div>
           <div className="space-y-2">

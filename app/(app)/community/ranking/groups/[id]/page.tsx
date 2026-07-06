@@ -11,6 +11,7 @@ import { useRankingGroups } from "@/hooks/useRankingGroups";
 import { formatCurrency } from "@/lib/calculations";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
+import { canModerate } from "@/lib/permissions";
 import type { RankingGroup, RankingMetric } from "@/lib/types";
 
 const METRIC_LABELS: Record<RankingMetric, string> = {
@@ -33,7 +34,7 @@ export default function GroupRankingPage({ params }: { params: Promise<{ id: str
   const { entries, loading, error } = useGroupRanking(id);
   const { myGroups, leaveGroup, deleteGroup } = useRankingGroups();
   const group: RankingGroup | undefined = myGroups.find((g) => g.id === id);
-  const canRemove = group?.ownerId === user?.id || profile?.isAdmin === true;
+  const canRemove = canModerate(profile, group?.ownerId, user?.id);
 
   async function handleLeave() {
     await leaveGroup(id);

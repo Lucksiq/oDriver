@@ -44,16 +44,22 @@ export const onboardingLocationSchema = z.object({
   phone: phoneSchema,
 });
 
-export const editProfileSchema = z.object({
-  displayName: z.string().min(2, "Informe seu nome"),
-  email: z.string().email("E-mail inválido"),
-  phone: phoneSchema,
-  city: z.string().min(2, "Informe sua cidade"),
-  state: z.string().min(2, "Informe seu estado"),
-  // platforms is managed as separate component state (checkboxes aren't
-  // wired through react-hook-form's register), validated manually in onSubmit.
-  newPassword: z.union([z.string().length(0), z.string().min(6, "Mínimo de 6 caracteres")]).optional(),
-});
+export const editProfileSchema = z
+  .object({
+    displayName: z.string().min(2, "Informe seu nome"),
+    email: z.string().email("E-mail inválido"),
+    phone: phoneSchema,
+    city: z.string().min(2, "Informe sua cidade"),
+    state: z.string().min(2, "Informe seu estado"),
+    // platforms is managed as separate component state (checkboxes aren't
+    // wired through react-hook-form's register), validated manually in onSubmit.
+    newPassword: z.union([z.string().length(0), z.string().min(6, "Mínimo de 6 caracteres")]).optional(),
+    confirmNewPassword: z.string().optional(),
+  })
+  .refine((data) => !data.newPassword || data.newPassword === data.confirmNewPassword, {
+    message: "As senhas não coincidem",
+    path: ["confirmNewPassword"],
+  });
 export type EditProfileFormValues = z.input<typeof editProfileSchema>;
 export type EditProfileInput = z.output<typeof editProfileSchema>;
 
@@ -95,7 +101,8 @@ export const batchRideSchema = z.object({
   totalCosts: z
     .string()
     .optional()
-    .transform((v) => (v ? Number(v.replace(",", ".")) : undefined)),
+    .transform((v) => (v ? Number(v.replace(",", ".")) : undefined))
+    .refine((v) => v === undefined || (!Number.isNaN(v) && v >= 0), "Custo inválido"),
 });
 export type BatchRideFormValues = z.input<typeof batchRideSchema>;
 export type BatchRideInput = z.output<typeof batchRideSchema>;
