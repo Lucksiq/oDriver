@@ -9,9 +9,19 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
 import { digitsOnly, formatPhone } from "@/lib/phone";
+import { BRAZIL_STATES, getCapitalForState, getCitiesForState } from "@/lib/brazil-locations";
 import type { Platform } from "@/lib/types";
+
+const STATE_ITEMS = Object.fromEntries(BRAZIL_STATES.map((s) => [s.code, `${s.code} — ${s.name}`]));
 
 const PLATFORM_OPTIONS: { value: Platform; label: string }[] = [
   { value: "uber", label: "Uber" },
@@ -49,6 +59,11 @@ export default function OnboardingPage() {
     setPlatforms((prev) =>
       prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p],
     );
+  }
+
+  function handleStateChange(code: string) {
+    setState(code);
+    setCity(getCapitalForState(code) ?? "");
   }
 
   async function next() {
@@ -131,22 +146,39 @@ export default function OnboardingPage() {
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">Onde você dirige?</p>
             <div className="space-y-1.5">
-              <Label htmlFor="city">Cidade</Label>
-              <Input
-                id="city"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="São Paulo"
-              />
+              <Label htmlFor="state">Estado</Label>
+              <Select items={STATE_ITEMS} value={state} onValueChange={(v) => v && handleStateChange(v)}>
+                <SelectTrigger id="state" className="w-full">
+                  <SelectValue placeholder="Selecione o estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  {BRAZIL_STATES.map((s) => (
+                    <SelectItem key={s.code} value={s.code}>
+                      {s.code} — {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="state">Estado</Label>
-              <Input
-                id="state"
-                value={state}
-                onChange={(e) => setState(e.target.value)}
-                placeholder="SP"
-              />
+              <Label htmlFor="city">Cidade</Label>
+              <Select
+                items={Object.fromEntries(getCitiesForState(state).map((c) => [c, c]))}
+                value={city}
+                onValueChange={(v) => v && setCity(v)}
+                disabled={!state}
+              >
+                <SelectTrigger id="city" className="w-full">
+                  <SelectValue placeholder={state ? "Selecione a cidade" : "Selecione o estado primeiro"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {getCitiesForState(state).map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="phone">Telefone (com DDD)</Label>

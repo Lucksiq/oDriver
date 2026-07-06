@@ -15,11 +15,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { editProfileSchema, type EditProfileFormValues, type EditProfileInput } from "@/lib/schemas";
 import { formatPhone } from "@/lib/phone";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
+import { BRAZIL_STATES, getCapitalForState, getCitiesForState } from "@/lib/brazil-locations";
 import type { Platform } from "@/lib/types";
+
+const STATE_ITEMS = Object.fromEntries(BRAZIL_STATES.map((s) => [s.code, `${s.code} — ${s.name}`]));
 
 const PLATFORM_OPTIONS: { value: Platform; label: string }[] = [
   { value: "uber", label: "Uber" },
@@ -42,6 +52,8 @@ export function EditProfileDialog({
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<EditProfileFormValues, unknown, EditProfileInput>({
     resolver: zodResolver(editProfileSchema),
@@ -61,7 +73,6 @@ export function EditProfileDialog({
     // visibility), so form state from a previous open/edit/save cycle would
     // otherwise linger — reset it to the current profile every time it opens.
     if (!open) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPlatforms(profile?.platforms ?? []);
     reset({
       displayName: profile?.displayName ?? "",
@@ -78,6 +89,13 @@ export function EditProfileDialog({
   function togglePlatform(p: Platform) {
     setPlatforms((prev) => (prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]));
   }
+
+  function handleStateChange(code: string) {
+    setValue("state", code);
+    setValue("city", getCapitalForState(code) ?? "");
+  }
+
+  const selectedState = watch("state");
 
   async function onSubmit(data: EditProfileInput) {
     if (platforms.length === 0) {
@@ -148,14 +166,45 @@ export function EditProfileDialog({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="edit-city">Cidade</Label>
-              <Input id="edit-city" {...register("city")} />
-              {errors.city && <p className="text-sm text-destructive">{errors.city.message}</p>}
+              <Label htmlFor="edit-state">Estado</Label>
+              <Select
+                items={STATE_ITEMS}
+                value={selectedState}
+                onValueChange={(v) => v && handleStateChange(v)}
+              >
+                <SelectTrigger id="edit-state" className="w-full">
+                  <SelectValue placeholder="UF" />
+                </SelectTrigger>
+                <SelectContent>
+                  {BRAZIL_STATES.map((s) => (
+                    <SelectItem key={s.code} value={s.code}>
+                      {s.code} — {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.state && <p className="text-sm text-destructive">{errors.state.message}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-state">Estado</Label>
-              <Input id="edit-state" {...register("state")} />
-              {errors.state && <p className="text-sm text-destructive">{errors.state.message}</p>}
+              <Label htmlFor="edit-city">Cidade</Label>
+              <Select
+                items={Object.fromEntries(getCitiesForState(selectedState ?? "").map((c) => [c, c]))}
+                value={watch("city")}
+                onValueChange={(v) => v && setValue("city", v)}
+                disabled={!selectedState}
+              >
+                <SelectTrigger id="edit-city" className="w-full">
+                  <SelectValue placeholder={selectedState ? "Cidade" : "Selecione a UF"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {getCitiesForState(selectedState ?? "").map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.city && <p className="text-sm text-destructive">{errors.city.message}</p>}
             </div>
           </div>
           <div className="space-y-1.5">
