@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DEMO_CITY } from "@/lib/geo";
 import { getCurrentPosition } from "@/lib/geolocation";
 import { useAuth } from "@/providers/AuthProvider";
-import type { MapReport, MapReportType } from "@/lib/types";
+import type { MapReport, MapReportType, MapReportVote } from "@/lib/types";
 
 type LocationSource = "gps" | "profile-city" | "fallback";
 
@@ -71,12 +71,12 @@ export function TomTomMap({
   reports,
   pendingLocation,
   onMapClick,
-  onConfirmReport,
+  onVoteReport,
 }: {
   reports: MapReport[];
   pendingLocation: { lat: number; lng: number } | null;
   onMapClick: (loc: { lat: number; lng: number }) => void;
-  onConfirmReport: (id: string) => void;
+  onVoteReport: (id: string, vote: MapReportVote) => void;
 }) {
   const apiKey = process.env.NEXT_PUBLIC_TOMTOM_API_KEY;
   const { profile } = useAuth();
@@ -180,6 +180,14 @@ export function TomTomMap({
     if (!mapReady || !mapRef.current || !center) return;
     mapRef.current.setCenter([center.lng, center.lat]);
   }, [center, mapReady]);
+
+  useEffect(() => {
+    if (!selected) return;
+    const updated = reports.find((r) => r.id === selected.id);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSelected(updated ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reports]);
 
   useEffect(() => {
     if (!mapReady || !mapRef.current) return;
@@ -297,7 +305,7 @@ export function TomTomMap({
 
       {selected && (
         <Card>
-          <CardContent className="flex items-center justify-between gap-3 p-3">
+          <CardContent className="space-y-3 p-3">
             <div>
               <p className="font-semibold">
                 {TYPE_META[selected.type].emoji} {TYPE_META[selected.type].label}
@@ -306,18 +314,28 @@ export function TomTomMap({
                 <p className="text-sm text-muted-foreground">{selected.description}</p>
               )}
               <p className="text-xs text-muted-foreground">
-                {selected.confirmations} confirmações · {selected.city}
+                {selected.confirmations} confirmações · {selected.denials} não confirmações ·{" "}
+                {selected.city}
               </p>
             </div>
-            <Button
-              size="sm"
-              onClick={() => {
-                onConfirmReport(selected.id);
-                setSelected({ ...selected, confirmations: selected.confirmations + 1 });
-              }}
-            >
-              Confirmar
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                className="flex-1"
+                variant={selected.myVote === "confirm" ? "default" : "outline"}
+                onClick={() => onVoteReport(selected.id, "confirm")}
+              >
+                Confirmar
+              </Button>
+              <Button
+                size="sm"
+                className="flex-1"
+                variant={selected.myVote === "deny" ? "default" : "outline"}
+                onClick={() => onVoteReport(selected.id, "deny")}
+              >
+                Não confirmar
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}

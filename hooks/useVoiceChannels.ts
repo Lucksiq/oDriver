@@ -46,12 +46,12 @@ export function useVoiceChannels() {
   }) {
     const { data, error } = await supabase.rpc("create_voice_channel", {
       p_name: input.name,
-      p_topic: input.topic ?? null,
-      p_city: input.city ?? null,
+      p_topic: input.topic ?? "",
+      p_city: input.city ?? "",
       p_is_private: input.isPrivate,
     });
     if (error || !data) {
-      toast.error("Não foi possível criar o canal");
+      toast.error(error?.message ?? "Não foi possível criar o canal");
       return null;
     }
     await refresh();
@@ -82,8 +82,16 @@ export function useVoiceChannels() {
   }
 
   async function deleteChannel(id: string) {
-    await supabase.from("voice_channels").delete().eq("id", id);
+    const { data, error } = await supabase.from("voice_channels").delete().eq("id", id).select();
+    if (error || !data || data.length === 0) {
+      toast.error(
+        error?.message ??
+          "Só o criador com oDriver Premium ou um admin pode remover este canal",
+      );
+      return false;
+    }
     await refresh();
+    return true;
   }
 
   return {

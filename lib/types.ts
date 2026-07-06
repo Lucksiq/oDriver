@@ -34,6 +34,7 @@ export interface Profile {
   email: string;
   username: string;
   displayName: string;
+  phone: string;
   city: string;
   state: string;
   avatarUrl?: string;
@@ -60,6 +61,7 @@ export interface Ride {
   rideType: RideType;
   rating?: number;
   notes?: string;
+  rideCount: number;
   createdAt: string;
 }
 
@@ -106,6 +108,8 @@ export interface Post {
   createdAt: string;
 }
 
+export type MapReportVote = "confirm" | "deny";
+
 export interface MapReport {
   id: string;
   userId: string;
@@ -115,8 +119,10 @@ export interface MapReport {
   description?: string;
   city: string;
   confirmations: number;
+  denials: number;
   active: boolean;
   createdAt: string;
+  myVote?: MapReportVote;
 }
 
 export interface RankingEntry {
@@ -129,6 +135,7 @@ export interface RankingEntry {
 
 export interface RankingGroup {
   id: string;
+  ownerId: string;
   name: string;
   description?: string;
   isPrivate: boolean;

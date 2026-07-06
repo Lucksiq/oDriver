@@ -14,6 +14,7 @@ interface AuthContextValue {
   updateProfile: (
     partial: TablesUpdate<"profiles">,
   ) => Promise<{ ok: true } | { ok: false; error: string }>;
+  refreshProfile: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -48,10 +49,12 @@ function AuthProviderInner({ initialUser, initialProfile, children }: AuthProvid
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") {
         setUser(null);
         setProfile(null);
+      } else if (event === "USER_UPDATED" && session?.user) {
+        setUser(session.user);
       }
     });
     return () => subscription.unsubscribe();
@@ -72,6 +75,16 @@ function AuthProviderInner({ initialUser, initialProfile, children }: AuthProvid
     return { ok: true as const };
   }
 
+  async function refreshProfile() {
+    const {
+      data: { user: freshUser },
+    } = await supabase.auth.getUser();
+    if (!freshUser) return;
+    setUser(freshUser);
+    const { data } = await supabase.from("profiles").select("*").eq("id", freshUser.id).single();
+    if (data) setProfile(mapProfileRow(data, freshUser));
+  }
+
   async function logout() {
     await supabase.auth.signOut();
     setUser(null);
@@ -80,7 +93,7 @@ function AuthProviderInner({ initialUser, initialProfile, children }: AuthProvid
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, updateProfile, logout }}>
+    <AuthContext.Provider value={{ user, profile, updateProfile, refreshProfile, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -10,6 +10,7 @@ import { useGroupRanking } from "@/hooks/useGroupRanking";
 import { useRankingGroups } from "@/hooks/useRankingGroups";
 import { formatCurrency } from "@/lib/calculations";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/providers/AuthProvider";
 import type { RankingGroup, RankingMetric } from "@/lib/types";
 
 const METRIC_LABELS: Record<RankingMetric, string> = {
@@ -28,14 +29,24 @@ function formatForMetric(metric: RankingMetric) {
 export default function GroupRankingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const { user, profile } = useAuth();
   const { entries, loading, error } = useGroupRanking(id);
-  const { myGroups, leaveGroup } = useRankingGroups();
+  const { myGroups, leaveGroup, deleteGroup } = useRankingGroups();
   const group: RankingGroup | undefined = myGroups.find((g) => g.id === id);
+  const canRemove = group?.ownerId === user?.id || profile?.isAdmin === true;
 
   async function handleLeave() {
     await leaveGroup(id);
     toast.info("Você saiu do grupo");
     router.push("/community/ranking");
+  }
+
+  async function handleRemove() {
+    const ok = await deleteGroup(id);
+    if (ok) {
+      toast.info("Grupo removido");
+      router.push("/community/ranking");
+    }
   }
 
   return (
@@ -89,8 +100,12 @@ export default function GroupRankingPage({ params }: { params: Promise<{ id: str
         ))}
       </div>
 
-      <Button variant="outline" className="w-full text-destructive" onClick={handleLeave}>
-        Sair do grupo
+      <Button
+        variant="outline"
+        className="w-full text-destructive"
+        onClick={canRemove ? handleRemove : handleLeave}
+      >
+        {canRemove ? "Remover grupo" : "Sair do grupo"}
       </Button>
     </div>
   );

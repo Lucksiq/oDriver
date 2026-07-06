@@ -8,7 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useVoiceMessages } from "@/hooks/useVoiceMessages";
-import { useAudioRecorder, MAX_RECORDING_SECONDS } from "@/hooks/useAudioRecorder";
+import {
+  useAudioRecorder,
+  FREE_MAX_RECORDING_SECONDS,
+  PREMIUM_MAX_RECORDING_SECONDS,
+} from "@/hooks/useAudioRecorder";
 import { useAuth } from "@/providers/AuthProvider";
 import { base64ToObjectUrl, blobToBase64, formatDuration } from "@/lib/audio";
 import type { VoiceChannel, VoiceMessage } from "@/lib/voice-channels";
@@ -95,9 +99,10 @@ export function VoiceMessageBoard({
   channel: VoiceChannel;
   onLeave: () => void;
 }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { messages, loading, postMessage, deleteMessage } = useVoiceMessages(channel.id);
   const recorder = useAudioRecorder();
+  const maxSeconds = profile?.isPremium ? PREMIUM_MAX_RECORDING_SECONDS : FREE_MAX_RECORDING_SECONDS;
 
   async function handleStopAndSend() {
     const result = await recorder.stop();
@@ -108,11 +113,11 @@ export function VoiceMessageBoard({
   }
 
   useEffect(() => {
-    if (recorder.recording && recorder.seconds >= MAX_RECORDING_SECONDS) {
+    if (recorder.recording && recorder.seconds >= maxSeconds) {
       handleStopAndSend();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recorder.recording, recorder.seconds]);
+  }, [recorder.recording, recorder.seconds, maxSeconds]);
 
   return (
     <Card className="border-primary">
@@ -125,7 +130,8 @@ export function VoiceMessageBoard({
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-xs text-muted-foreground">
-          Áudios ficam disponíveis por 12h e depois são apagados automaticamente.
+          Áudios ficam disponíveis por 12h e depois são apagados automaticamente. Máximo de{" "}
+          {maxSeconds}s por áudio{!profile?.isPremium && " (90s no oDriver Premium)"}.
         </p>
 
         <div className="max-h-96 space-y-2 overflow-y-auto">
@@ -138,7 +144,7 @@ export function VoiceMessageBoard({
             <MessageBubble
               key={m.id}
               message={m}
-              isOwn={m.authorId === user?.id}
+              isOwn={m.authorId === user?.id || profile?.isAdmin === true}
               onDelete={deleteMessage}
             />
           ))}

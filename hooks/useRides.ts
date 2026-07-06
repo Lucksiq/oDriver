@@ -48,6 +48,7 @@ export function useRides() {
       ride_type: input.rideType,
       rating: input.rating ?? null,
       notes: input.notes ?? null,
+      ride_count: input.rideCount,
     });
     await refresh();
   }
@@ -64,6 +65,7 @@ export function useRides() {
     if (partial.rideType !== undefined) patch.ride_type = partial.rideType;
     if (partial.rating !== undefined) patch.rating = partial.rating;
     if (partial.notes !== undefined) patch.notes = partial.notes;
+    if (partial.rideCount !== undefined) patch.ride_count = partial.rideCount;
     await supabase.from("rides").update(patch).eq("id", id);
     await refresh();
   }

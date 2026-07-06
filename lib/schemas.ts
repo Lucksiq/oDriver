@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { digitsOnly } from "@/lib/phone";
 
 const numberFromInput = (label: string) =>
   z
@@ -6,6 +7,12 @@ const numberFromInput = (label: string) =>
     .min(1, `${label} é obrigatório`)
     .transform((v) => Number(v.replace(",", ".")))
     .refine((v) => !Number.isNaN(v) && v >= 0, `${label} inválido`);
+
+export const phoneSchema = z
+  .string()
+  .min(1, "Telefone é obrigatório")
+  .transform(digitsOnly)
+  .refine((v) => v.length === 10 || v.length === 11, "Informe um telefone válido com DDD");
 
 export const loginSchema = z.object({
   email: z.string().email("E-mail inválido"),
@@ -17,6 +24,7 @@ export const registerSchema = z
   .object({
     displayName: z.string().min(2, "Informe seu nome"),
     email: z.string().email("E-mail inválido"),
+    phone: phoneSchema,
     password: z.string().min(6, "Mínimo de 6 caracteres"),
     confirmPassword: z.string().min(6, "Mínimo de 6 caracteres"),
   })
@@ -33,7 +41,21 @@ export const onboardingPlatformsSchema = z.object({
 export const onboardingLocationSchema = z.object({
   city: z.string().min(2, "Informe sua cidade"),
   state: z.string().min(2, "Informe seu estado"),
+  phone: phoneSchema,
 });
+
+export const editProfileSchema = z.object({
+  displayName: z.string().min(2, "Informe seu nome"),
+  email: z.string().email("E-mail inválido"),
+  phone: phoneSchema,
+  city: z.string().min(2, "Informe sua cidade"),
+  state: z.string().min(2, "Informe seu estado"),
+  // platforms is managed as separate component state (checkboxes aren't
+  // wired through react-hook-form's register), validated manually in onSubmit.
+  newPassword: z.union([z.string().length(0), z.string().min(6, "Mínimo de 6 caracteres")]).optional(),
+});
+export type EditProfileFormValues = z.input<typeof editProfileSchema>;
+export type EditProfileInput = z.output<typeof editProfileSchema>;
 
 export const onboardingGoalSchema = z.object({
   dailyGoal: numberFromInput("Meta diária"),
@@ -60,6 +82,23 @@ export const rideDetailedSchema = rideQuickSchema.extend({
 });
 export type RideDetailedFormValues = z.input<typeof rideDetailedSchema>;
 export type RideDetailedInput = z.output<typeof rideDetailedSchema>;
+
+export const batchRideSchema = z.object({
+  platform: z.enum(["uber", "99", "ifood", "other"]),
+  date: z.string().min(1, "Informe a data"),
+  rideCount: z
+    .string()
+    .min(1, "Informe a quantidade de corridas")
+    .transform((v) => Number(v))
+    .refine((v) => Number.isInteger(v) && v >= 1, "Quantidade inválida"),
+  totalAmount: numberFromInput("Faturamento total"),
+  totalCosts: z
+    .string()
+    .optional()
+    .transform((v) => (v ? Number(v.replace(",", ".")) : undefined)),
+});
+export type BatchRideFormValues = z.input<typeof batchRideSchema>;
+export type BatchRideInput = z.output<typeof batchRideSchema>;
 
 export const expenseSchema = z.object({
   category: z.enum(["fuel", "maintenance", "tax", "food", "platform_fee", "other"]),

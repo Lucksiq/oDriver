@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useMapReports } from "@/hooks/useMapReports";
 
 export default function MapPage() {
-  const { reports, confirmReport } = useMapReports();
+  const { reports, voteReport } = useMapReports();
   const [pendingLocation, setPendingLocation] = useState<{ lat: number; lng: number } | null>(
     null,
   );
@@ -23,7 +23,7 @@ export default function MapPage() {
         reports={reports}
         pendingLocation={pendingLocation}
         onMapClick={setPendingLocation}
-        onConfirmReport={confirmReport}
+        onVoteReport={voteReport}
       />
 
       {pendingLocation ? (

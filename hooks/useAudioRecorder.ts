@@ -3,7 +3,8 @@
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
-export const MAX_RECORDING_SECONDS = 30;
+export const FREE_MAX_RECORDING_SECONDS = 30;
+export const PREMIUM_MAX_RECORDING_SECONDS = 90;
 
 export function useAudioRecorder() {
   const [recording, setRecording] = useState(false);

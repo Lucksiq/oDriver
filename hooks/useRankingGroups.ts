@@ -47,13 +47,13 @@ export function useRankingGroups() {
   }) {
     const { data, error } = await supabase.rpc("create_ranking_group", {
       p_name: input.name,
-      p_description: input.description ?? null,
+      p_description: input.description ?? "",
       p_is_private: input.isPrivate,
       p_metric: input.metric,
       p_period: input.period,
     });
     if (error || !data) {
-      toast.error("Não foi possível criar o grupo");
+      toast.error(error?.message ?? "Não foi possível criar o grupo");
       return null;
     }
     await refresh();
@@ -82,5 +82,22 @@ export function useRankingGroups() {
     await refresh();
   }
 
-  return { myGroups, discoverGroups, loading, createGroup, joinGroup, leaveGroup };
+  async function deleteGroup(groupId: string) {
+    const { data, error } = await supabase
+      .from("ranking_groups")
+      .delete()
+      .eq("id", groupId)
+      .select();
+    if (error || !data || data.length === 0) {
+      toast.error(
+        error?.message ??
+          "Só o criador com oDriver Premium ou um admin pode remover este grupo",
+      );
+      return false;
+    }
+    await refresh();
+    return true;
+  }
+
+  return { myGroups, discoverGroups, loading, createGroup, joinGroup, leaveGroup, deleteGroup };
 }

@@ -25,7 +25,7 @@ export default function RegisterPage() {
     const { data: signUpData, error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
-      options: { data: { display_name: data.displayName } },
+      options: { data: { display_name: data.displayName, phone: data.phone } },
     });
 
     if (error) {
@@ -67,6 +67,13 @@ export default function RegisterPage() {
             <Input id="email" type="email" placeholder="voce@email.com" {...register("email")} />
             {errors.email && (
               <p className="text-sm text-destructive">{errors.email.message}</p>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="phone">Telefone (com DDD)</Label>
+            <Input id="phone" placeholder="(11) 91234-5678" {...register("phone")} />
+            {errors.phone && (
+              <p className="text-sm text-destructive">{errors.phone.message}</p>
             )}
           </div>
           <div className="space-y-1.5">

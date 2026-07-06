@@ -22,6 +22,7 @@ export function mapProfileRow(row: Tables<"profiles">, user: User): Profile {
     email: user.email ?? "",
     username: row.username ?? "",
     displayName: row.display_name ?? "",
+    phone: row.phone,
     city: row.city ?? "",
     state: row.state ?? "",
     avatarUrl: row.avatar_url ?? undefined,
@@ -50,6 +51,7 @@ export function mapRideRow(row: Tables<"rides">): Ride {
     rideType: row.ride_type as Ride["rideType"],
     rating: row.rating !== null ? Number(row.rating) : undefined,
     notes: row.notes ?? undefined,
+    rideCount: row.ride_count,
     createdAt: row.created_at,
   };
 }
@@ -79,7 +81,10 @@ export function mapExtraEarningRow(row: Tables<"extra_earnings">): ExtraEarning 
   };
 }
 
-export function mapMapReportRow(row: Tables<"map_reports">): MapReport {
+export function mapMapReportRow(
+  row: Tables<"map_reports">,
+  myVote?: MapReport["myVote"],
+): MapReport {
   return {
     id: row.id,
     userId: row.user_id,
@@ -89,8 +94,10 @@ export function mapMapReportRow(row: Tables<"map_reports">): MapReport {
     description: row.description ?? undefined,
     city: row.city ?? "",
     confirmations: row.confirmations,
+    denials: row.denials,
     active: row.active,
     createdAt: row.created_at,
+    myVote,
   };
 }
 
@@ -138,6 +145,7 @@ export function mapRankingGroupRow(
 ): RankingGroup {
   return {
     id: row.id,
+    ownerId: row.owner_id,
     name: row.name,
     description: row.description ?? undefined,
     isPrivate: row.is_private,

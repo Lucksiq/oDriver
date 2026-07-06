@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { createClient } from "@/lib/supabase/client";
+import { digitsOnly, formatPhone } from "@/lib/phone";
 import type { Platform } from "@/lib/types";
 
 const PLATFORM_OPTIONS: { value: Platform; label: string }[] = [
@@ -26,7 +27,23 @@ export default function OnboardingPage() {
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
+  const [phone, setPhone] = useState("");
   const [dailyGoal, setDailyGoal] = useState("150");
+
+  useEffect(() => {
+    // Prefills the phone collected at signup (email/password path) so the
+    // user isn't asked twice; stays empty for Google OAuth signups, which
+    // never went through the register form and must fill it in here.
+    async function loadPhone() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("profiles").select("phone").eq("id", user.id).single();
+      if (data?.phone) setPhone(formatPhone(data.phone));
+    }
+    loadPhone();
+  }, [supabase]);
 
   function togglePlatform(p: Platform) {
     setPlatforms((prev) =>
@@ -41,6 +58,10 @@ export default function OnboardingPage() {
     }
     if (step === 2 && (!city || !state)) {
       toast.error("Informe cidade e estado");
+      return;
+    }
+    if (step === 2 && digitsOnly(phone).length !== 10 && digitsOnly(phone).length !== 11) {
+      toast.error("Informe um telefone válido com DDD");
       return;
     }
     if (step < 3) {
@@ -66,6 +87,7 @@ export default function OnboardingPage() {
         platforms,
         city,
         state,
+        phone: digitsOnly(phone),
         daily_goal: goal,
         onboarding_complete: true,
       })
@@ -124,6 +146,15 @@ export default function OnboardingPage() {
                 value={state}
                 onChange={(e) => setState(e.target.value)}
                 placeholder="SP"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="phone">Telefone (com DDD)</Label>
+              <Input
+                id="phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="(11) 91234-5678"
               />
             </div>
           </div>

@@ -14,170 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      voice_channels: {
-        Row: {
-          city: string | null
-          created_at: string
-          id: string
-          invite_code: string
-          is_private: boolean
-          name: string
-          owner_id: string
-          topic: string | null
-        }
-        Insert: {
-          city?: string | null
-          created_at?: string
-          id?: string
-          invite_code?: string
-          is_private?: boolean
-          name: string
-          owner_id: string
-          topic?: string | null
-        }
-        Update: {
-          city?: string | null
-          created_at?: string
-          id?: string
-          invite_code?: string
-          is_private?: boolean
-          name?: string
-          owner_id?: string
-          topic?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "voice_channels_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "admin_user_stats"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "voice_channels_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "voice_channels_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_stats"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      voice_channel_members: {
-        Row: {
-          channel_id: string
-          joined_at: string
-          user_id: string
-        }
-        Insert: {
-          channel_id: string
-          joined_at?: string
-          user_id: string
-        }
-        Update: {
-          channel_id?: string
-          joined_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "voice_channel_members_channel_id_fkey"
-            columns: ["channel_id"]
-            isOneToOne: false
-            referencedRelation: "voice_channels"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "voice_channel_members_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "admin_user_stats"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "voice_channel_members_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "voice_channel_members_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_stats"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      voice_messages: {
-        Row: {
-          audio_data: string
-          channel_id: string
-          created_at: string
-          duration_seconds: number | null
-          expires_at: string
-          id: string
-          mime_type: string
-          user_id: string
-        }
-        Insert: {
-          audio_data: string
-          channel_id: string
-          created_at?: string
-          duration_seconds?: number | null
-          expires_at?: string
-          id?: string
-          mime_type?: string
-          user_id: string
-        }
-        Update: {
-          audio_data?: string
-          channel_id?: string
-          created_at?: string
-          duration_seconds?: number | null
-          expires_at?: string
-          id?: string
-          mime_type?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "voice_messages_channel_id_fkey"
-            columns: ["channel_id"]
-            isOneToOne: false
-            referencedRelation: "voice_channels"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "voice_messages_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "admin_user_stats"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "voice_messages_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "voice_messages_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_stats"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
       expenses: {
         Row: {
           amount: number
@@ -346,12 +182,63 @@ export type Database = {
           },
         ]
       }
+      map_report_votes: {
+        Row: {
+          created_at: string
+          report_id: string
+          user_id: string
+          vote: string
+        }
+        Insert: {
+          created_at?: string
+          report_id: string
+          user_id: string
+          vote: string
+        }
+        Update: {
+          created_at?: string
+          report_id?: string
+          user_id?: string
+          vote?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "map_report_votes_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "map_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "map_report_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "map_report_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "map_report_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       map_reports: {
         Row: {
           active: boolean
           city: string | null
           confirmations: number
           created_at: string
+          denials: number
           description: string | null
           id: string
           latitude: number
@@ -364,6 +251,7 @@ export type Database = {
           city?: string | null
           confirmations?: number
           created_at?: string
+          denials?: number
           description?: string | null
           id?: string
           latitude: number
@@ -376,6 +264,7 @@ export type Database = {
           city?: string | null
           confirmations?: number
           created_at?: string
+          denials?: number
           description?: string | null
           id?: string
           latitude?: number
@@ -453,6 +342,118 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      posts: {
+        Row: {
+          city: string | null
+          content: string
+          created_at: string
+          id: string
+          reactions: Json
+          type: string
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          reactions?: Json
+          type?: string
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          reactions?: Json
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          city: string | null
+          created_at: string
+          daily_goal: number
+          display_name: string | null
+          id: string
+          is_admin: boolean
+          is_premium: boolean
+          monthly_goal: number
+          onboarding_complete: boolean
+          phone: string
+          platforms: string[]
+          premium_until: string | null
+          show_earnings_public: boolean
+          state: string | null
+          username: string | null
+          weekly_goal: number
+        }
+        Insert: {
+          avatar_url?: string | null
+          city?: string | null
+          created_at?: string
+          daily_goal?: number
+          display_name?: string | null
+          id: string
+          is_admin?: boolean
+          is_premium?: boolean
+          monthly_goal?: number
+          onboarding_complete?: boolean
+          phone?: string
+          platforms?: string[]
+          premium_until?: string | null
+          show_earnings_public?: boolean
+          state?: string | null
+          username?: string | null
+          weekly_goal?: number
+        }
+        Update: {
+          avatar_url?: string | null
+          city?: string | null
+          created_at?: string
+          daily_goal?: number
+          display_name?: string | null
+          id?: string
+          is_admin?: boolean
+          is_premium?: boolean
+          monthly_goal?: number
+          onboarding_complete?: boolean
+          phone?: string
+          platforms?: string[]
+          premium_until?: string | null
+          show_earnings_public?: boolean
+          state?: string | null
+          username?: string | null
+          weekly_goal?: number
+        }
+        Relationships: []
       }
       push_subscriptions: {
         Row: {
@@ -611,115 +612,6 @@ export type Database = {
           },
         ]
       }
-      posts: {
-        Row: {
-          city: string | null
-          content: string
-          created_at: string
-          id: string
-          reactions: Json
-          type: string
-          user_id: string
-        }
-        Insert: {
-          city?: string | null
-          content: string
-          created_at?: string
-          id?: string
-          reactions?: Json
-          type?: string
-          user_id: string
-        }
-        Update: {
-          city?: string | null
-          content?: string
-          created_at?: string
-          id?: string
-          reactions?: Json
-          type?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "posts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "admin_user_stats"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "posts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "posts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_stats"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          city: string | null
-          created_at: string
-          daily_goal: number
-          display_name: string | null
-          id: string
-          is_admin: boolean
-          is_premium: boolean
-          monthly_goal: number
-          onboarding_complete: boolean
-          platforms: string[]
-          premium_until: string | null
-          show_earnings_public: boolean
-          state: string | null
-          username: string | null
-          weekly_goal: number
-        }
-        Insert: {
-          avatar_url?: string | null
-          city?: string | null
-          created_at?: string
-          daily_goal?: number
-          display_name?: string | null
-          id: string
-          is_admin?: boolean
-          is_premium?: boolean
-          monthly_goal?: number
-          onboarding_complete?: boolean
-          platforms?: string[]
-          premium_until?: string | null
-          show_earnings_public?: boolean
-          state?: string | null
-          username?: string | null
-          weekly_goal?: number
-        }
-        Update: {
-          avatar_url?: string | null
-          city?: string | null
-          created_at?: string
-          daily_goal?: number
-          display_name?: string | null
-          id?: string
-          is_admin?: boolean
-          is_premium?: boolean
-          monthly_goal?: number
-          onboarding_complete?: boolean
-          platforms?: string[]
-          premium_until?: string | null
-          show_earnings_public?: boolean
-          state?: string | null
-          username?: string | null
-          weekly_goal?: number
-        }
-        Relationships: []
-      }
       rides: {
         Row: {
           amount: number
@@ -731,6 +623,7 @@ export type Database = {
           notes: string | null
           platform: string
           rating: number | null
+          ride_count: number
           ride_type: string
           started_at: string | null
           user_id: string
@@ -745,6 +638,7 @@ export type Database = {
           notes?: string | null
           platform: string
           rating?: number | null
+          ride_count?: number
           ride_type?: string
           started_at?: string | null
           user_id: string
@@ -759,6 +653,7 @@ export type Database = {
           notes?: string | null
           platform?: string
           rating?: number | null
+          ride_count?: number
           ride_type?: string
           started_at?: string | null
           user_id?: string
@@ -780,6 +675,170 @@ export type Database = {
           },
           {
             foreignKeyName: "rides_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      voice_channel_members: {
+        Row: {
+          channel_id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_channel_members_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "voice_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_channel_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_channel_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_channel_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      voice_channels: {
+        Row: {
+          city: string | null
+          created_at: string
+          id: string
+          invite_code: string
+          is_private: boolean
+          name: string
+          owner_id: string
+          topic: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          id?: string
+          invite_code?: string
+          is_private?: boolean
+          name: string
+          owner_id: string
+          topic?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          id?: string
+          invite_code?: string
+          is_private?: boolean
+          name?: string
+          owner_id?: string
+          topic?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_channels_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_channels_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_channels_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      voice_messages: {
+        Row: {
+          audio_data: string
+          channel_id: string
+          created_at: string
+          duration_seconds: number | null
+          expires_at: string
+          id: string
+          mime_type: string
+          user_id: string
+        }
+        Insert: {
+          audio_data: string
+          channel_id: string
+          created_at?: string
+          duration_seconds?: number | null
+          expires_at?: string
+          id?: string
+          mime_type?: string
+          user_id: string
+        }
+        Update: {
+          audio_data?: string
+          channel_id?: string
+          created_at?: string
+          duration_seconds?: number | null
+          expires_at?: string
+          id?: string
+          mime_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_messages_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "voice_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_user_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_messages_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "ranking_stats"
@@ -818,10 +877,9 @@ export type Database = {
     }
     Functions: {
       cleanup_expired_voice_messages: { Args: never; Returns: undefined }
-      confirm_map_report: { Args: { report_id: string }; Returns: undefined }
       create_ranking_group: {
         Args: {
-          p_description: string | null
+          p_description: string
           p_is_private: boolean
           p_metric: string
           p_name: string
@@ -842,10 +900,10 @@ export type Database = {
       }
       create_voice_channel: {
         Args: {
-          p_city: string | null
+          p_city: string
           p_is_private: boolean
           p_name: string
-          p_topic: string | null
+          p_topic: string
         }
         Returns: {
           city: string | null
@@ -857,23 +915,6 @@ export type Database = {
           owner_id: string
           topic: string | null
         }
-      }
-      join_voice_channel: {
-        Args: { p_invite_code: string }
-        Returns: {
-          city: string | null
-          created_at: string
-          id: string
-          invite_code: string
-          is_private: boolean
-          name: string
-          owner_id: string
-          topic: string | null
-        }
-      }
-      is_voice_channel_member: {
-        Args: { p_channel_id: string }
-        Returns: boolean
       }
       get_group_ranking: {
         Args: { p_group_id: string }
@@ -887,6 +928,10 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       is_ranking_group_member: {
         Args: { p_group_id: string }
+        Returns: boolean
+      }
+      is_voice_channel_member: {
+        Args: { p_channel_id: string }
         Returns: boolean
       }
       join_ranking_group: {
@@ -904,8 +949,29 @@ export type Database = {
           period: string
         }
       }
+      join_voice_channel: {
+        Args: { p_invite_code: string }
+        Returns: {
+          city: string | null
+          created_at: string
+          id: string
+          invite_code: string
+          is_private: boolean
+          name: string
+          owner_id: string
+          topic: string | null
+        }
+      }
       react_to_post: {
         Args: { p_post_id: string; p_reaction: string }
+        Returns: undefined
+      }
+      should_deactivate_report: {
+        Args: { p_confirmations: number; p_denials: number }
+        Returns: boolean
+      }
+      vote_map_report: {
+        Args: { p_report_id: string; p_vote: string }
         Returns: undefined
       }
     }

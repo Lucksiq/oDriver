@@ -124,6 +124,11 @@ export function RideList() {
               <p className="mt-1 text-lg font-bold tabular-nums">
                 {formatCurrency(ride.amount)}
               </p>
+              {ride.rideCount > 1 && (
+                <p className="text-xs text-muted-foreground">
+                  {ride.rideCount} corridas · {formatCurrency(ride.amount / ride.rideCount)}/corrida
+                </p>
+              )}
               {ride.distanceKm !== undefined && (
                 <p className="text-xs text-muted-foreground">{ride.distanceKm} km</p>
               )}

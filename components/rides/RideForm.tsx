@@ -71,6 +71,7 @@ export function RideForm() {
       endedAt: detailed ? data.endedAt : undefined,
       durationMinutes: detailed ? durationMinutes : undefined,
       rating: detailed ? data.rating : undefined,
+      rideCount: 1,
     });
     toast.success("Corrida registrada!");
     router.push("/rides");

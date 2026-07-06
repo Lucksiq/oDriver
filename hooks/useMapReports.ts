@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { mapMapReportRow } from "@/lib/supabase/mappers";
 import { useAuth } from "@/providers/AuthProvider";
-import type { MapReport, MapReportType } from "@/lib/types";
+import type { MapReport, MapReportType, MapReportVote } from "@/lib/types";
 
 export function useMapReports() {
   const { user } = useAuth();
@@ -14,14 +14,22 @@ export function useMapReports() {
   const instanceId = useId();
 
   const refresh = useCallback(async () => {
-    const { data } = await supabase
-      .from("map_reports")
-      .select("*")
-      .eq("active", true)
-      .order("created_at", { ascending: false });
-    setReports((data ?? []).map(mapMapReportRow));
+    const [reportsRes, votesRes] = await Promise.all([
+      supabase
+        .from("map_reports")
+        .select("*")
+        .eq("active", true)
+        .order("created_at", { ascending: false }),
+      user
+        ? supabase.from("map_report_votes").select("report_id, vote").eq("user_id", user.id)
+        : Promise.resolve({ data: [] as { report_id: string; vote: string }[] }),
+    ]);
+    const myVotes = new Map(
+      (votesRes.data ?? []).map((v) => [v.report_id, v.vote as MapReportVote]),
+    );
+    setReports((reportsRes.data ?? []).map((r) => mapMapReportRow(r, myVotes.get(r.id))));
     setLoading(false);
-  }, [supabase]);
+  }, [supabase, user]);
 
   useEffect(() => {
     // Fetch-on-mount; see useRides.ts for why this needs the disable.
@@ -63,13 +71,14 @@ export function useMapReports() {
     });
   }
 
-  async function confirmReport(id: string) {
-    await supabase.rpc("confirm_map_report", { report_id: id });
+  async function voteReport(id: string, vote: MapReportVote) {
+    await supabase.rpc("vote_map_report", { p_report_id: id, p_vote: vote });
+    await refresh();
   }
 
   const myReportsCount = user
     ? reports.filter((r) => r.userId === user.id).length
     : 0;
 
-  return { reports, loading, myReportsCount, addReport, confirmReport };
+  return { reports, loading, myReportsCount, addReport, voteReport };
 }

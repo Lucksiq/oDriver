@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
@@ -10,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { BadgeGrid } from "@/components/community/BadgeGrid";
+import { EditProfileDialog } from "@/components/profile/EditProfileDialog";
 import { useAuth } from "@/providers/AuthProvider";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 
@@ -17,6 +19,7 @@ export default function ProfilePage() {
   const { profile, updateProfile, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const push = usePushNotifications();
+  const [editOpen, setEditOpen] = useState(false);
 
   const initials = (profile?.displayName ?? "?")
     .split(" ")
@@ -52,6 +55,11 @@ export default function ProfilePage() {
           </div>
         </CardContent>
       </Card>
+
+      <Button variant="outline" className="w-full" onClick={() => setEditOpen(true)}>
+        Editar perfil
+      </Button>
+      <EditProfileDialog open={editOpen} onOpenChange={setEditOpen} />
 
       {!profile?.isPremium ? (
         <Card className="bg-brand-navy text-white">

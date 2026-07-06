@@ -11,7 +11,7 @@ import { CreateVoiceChannelDialog } from "@/components/voice/CreateVoiceChannelD
 import type { VoiceChannel } from "@/lib/voice-channels";
 
 export function ChannelList({ onOpen }: { onOpen: (channel: VoiceChannel) => void }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { myChannels, discoverChannels, createChannel, joinByCode, leaveChannel, deleteChannel } =
     useVoiceChannels();
   const [createOpen, setCreateOpen] = useState(false);
@@ -43,7 +43,7 @@ export function ChannelList({ onOpen }: { onOpen: (channel: VoiceChannel) => voi
   }
 
   function renderChannel(channel: VoiceChannel, mine: boolean) {
-    const isOwner = channel.ownerId === user?.id;
+    const canRemove = channel.ownerId === user?.id || profile?.isAdmin === true;
     return (
       <Card key={channel.id}>
         <CardContent className="flex items-center justify-between gap-3 p-3">
@@ -60,9 +60,9 @@ export function ChannelList({ onOpen }: { onOpen: (channel: VoiceChannel) => voi
                 size="sm"
                 variant="ghost"
                 className="text-destructive"
-                onClick={() => (isOwner ? handleDelete(channel.id) : handleLeave(channel.id))}
+                onClick={() => (canRemove ? handleDelete(channel.id) : handleLeave(channel.id))}
               >
-                {isOwner ? "Remover" : "Sair"}
+                {canRemove ? "Remover" : "Sair"}
               </Button>
             )}
             <Button size="sm" onClick={() => handleOpen(channel)}>
