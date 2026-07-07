@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { registerSchema, type RegisterInput } from "@/lib/schemas";
 import { createClient } from "@/lib/supabase/client";
@@ -18,8 +19,13 @@ export default function RegisterPage() {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
-  } = useForm<RegisterInput>({ resolver: zodResolver(registerSchema) });
+  } = useForm<RegisterInput>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { acceptedTerms: false },
+  });
 
   async function onSubmit(data: RegisterInput) {
     const { data: signUpData, error } = await supabase.auth.signUp({
@@ -95,6 +101,27 @@ export default function RegisterPage() {
               <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
             )}
           </div>
+          <label className="flex items-start gap-2.5 text-sm">
+            <Checkbox
+              checked={watch("acceptedTerms")}
+              onCheckedChange={(v) => setValue("acceptedTerms", v === true)}
+              className="mt-0.5"
+            />
+            <span className="text-muted-foreground">
+              Li e aceito os{" "}
+              <Link href="/terms" target="_blank" className="text-primary underline">
+                Termos de Uso
+              </Link>{" "}
+              e a{" "}
+              <Link href="/privacy" target="_blank" className="text-primary underline">
+                Política de Privacidade
+              </Link>
+              .
+            </span>
+          </label>
+          {errors.acceptedTerms && (
+            <p className="text-sm text-destructive">{errors.acceptedTerms.message}</p>
+          )}
           <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
             Criar conta
           </Button>

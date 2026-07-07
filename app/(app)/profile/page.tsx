@@ -4,6 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -14,12 +24,41 @@ import { BadgeGrid } from "@/components/community/BadgeGrid";
 import { EditProfileDialog } from "@/components/profile/EditProfileDialog";
 import { useAuth } from "@/providers/AuthProvider";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { createClient } from "@/lib/supabase/client";
+import { collectUserData, downloadJson } from "@/lib/data-export";
 
 export default function ProfilePage() {
-  const { profile, updateProfile, logout } = useAuth();
+  const { user, profile, updateProfile, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const push = usePushNotifications();
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const supabase = createClient();
+
+  async function handleExportData() {
+    if (!user) return;
+    setExporting(true);
+    try {
+      const data = await collectUserData(supabase, user.id);
+      downloadJson(data, `odriver-meus-dados-${new Date().toISOString().slice(0, 10)}.json`);
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function handleDeleteAccount() {
+    setDeletingAccount(true);
+    const { error } = await supabase.rpc("delete_own_account");
+    if (error) {
+      toast.error(error.message);
+      setDeletingAccount(false);
+      return;
+    }
+    toast.success("Conta excluída. Sentiremos sua falta!");
+    await logout();
+  }
 
   const initials = (profile?.displayName ?? "?")
     .split(" ")
@@ -154,9 +193,66 @@ export default function ProfilePage() {
         </Button>
       )}
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Privacidade e dados</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-xs text-muted-foreground">
+            Leia nossa{" "}
+            <Link href="/privacy" className="underline">
+              Política de Privacidade
+            </Link>{" "}
+            e os{" "}
+            <Link href="/terms" className="underline">
+              Termos de Uso
+            </Link>
+            .
+          </p>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={handleExportData}
+            disabled={exporting}
+          >
+            Baixar meus dados
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full text-destructive"
+            onClick={() => setDeleteAccountOpen(true)}
+          >
+            Excluir minha conta
+          </Button>
+        </CardContent>
+      </Card>
+
       <Button variant="outline" className="w-full text-destructive" onClick={logout}>
         Sair da conta
       </Button>
+
+      <AlertDialog open={deleteAccountOpen} onOpenChange={setDeleteAccountOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir sua conta?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Isso apaga permanentemente seu perfil, corridas, despesas, metas, reports no mapa,
+              grupos de ranking, canais de voz e qualquer outro dado associado à sua conta. Essa
+              ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deletingAccount}
+              onClick={handleDeleteAccount}
+            >
+              Excluir permanentemente
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

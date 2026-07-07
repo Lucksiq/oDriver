@@ -27,6 +27,9 @@ export const registerSchema = z
     phone: phoneSchema,
     password: z.string().min(6, "Mínimo de 6 caracteres"),
     confirmPassword: z.string().min(6, "Mínimo de 6 caracteres"),
+    acceptedTerms: z.boolean().refine((v) => v === true, {
+      message: "É preciso aceitar os Termos de Uso e a Política de Privacidade",
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "As senhas não coincidem",

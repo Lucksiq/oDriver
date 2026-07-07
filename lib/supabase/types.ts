@@ -916,6 +916,7 @@ export type Database = {
           topic: string | null
         }
       }
+      delete_own_account: { Args: never; Returns: undefined }
       get_group_ranking: {
         Args: { p_group_id: string }
         Returns: {

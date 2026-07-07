@@ -20,9 +20,14 @@ NEXT_PUBLIC_TOMTOM_API_KEY=
 OPENWEATHER_API_KEY=
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=
+NEXT_PUBLIC_SENTRY_DSN=
+SENTRY_ORG=
+SENTRY_PROJECT=
 ```
 
 `OPENWEATHER_API_KEY` e `VAPID_PRIVATE_KEY` não têm o prefixo `NEXT_PUBLIC_` de propósito — nunca vão para o bundle do cliente. A OpenWeather é usada pela API route `app/api/weather/route.ts`. `VAPID_PRIVATE_KEY` só é usada por `app/api/push/send/route.ts` para assinar notificações push. Gere seu próprio par de chaves VAPID com `npx web-push generate-vapid-keys` — é um protocolo padrão do navegador, não precisa de conta em nenhum serviço externo.
+
+`NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ORG` e `SENTRY_PROJECT` são opcionais — sem eles o Sentry simplesmente não inicializa (`enabled: !!process.env.NEXT_PUBLIC_SENTRY_DSN`), sem quebrar nada. Crie um projeto gratuito em [sentry.io](https://sentry.io) para captura de erros em produção; `SENTRY_ORG`/`SENTRY_PROJECT` (mais um auth token configurado no ambiente de build) só são necessários se também quiser upload de source maps para stack traces legíveis.
 
 ## Estado atual
 
@@ -48,6 +53,8 @@ VAPID_PRIVATE_KEY=
 - **Editar perfil** (`components/profile/EditProfileDialog.tsx`, botão "Editar perfil" no Perfil): nome, e-mail, telefone, cidade, estado, plataformas e uma nova senha (opcional) num único formulário. Trocar o e-mail chama `supabase.auth.updateUser({ email })` — por padrão o Supabase exige confirmar o e-mail novo (e às vezes o antigo também, "Secure email change") antes da troca valer para login; desative isso em Authentication → Sign In / Providers → Email se quiser que a troca seja instantânea em teste local, mesma ressalva já feita para o "Confirm email" do cadastro. `providers/AuthProvider.tsx` ganhou `refreshProfile()` e passou a escutar o evento `USER_UPDATED` do Supabase Auth para refletir o e-mail trocado sem precisar de reload.
 - **Defaults de Configurações para conta nova**: tema claro (era "system", agora `defaultTheme="light"` em `app/layout.tsx`), "Mostrar ganhos no ranking público" habilitado (era o oposto — `profiles.show_earnings_public` agora nasce `true`), "Notificações de metas" desabilitado (já era o padrão, continua sendo — exige permissão explícita do navegador). Contas existentes não são alteradas, só o valor inicial de uma conta nova muda.
 - **Corridas avulsas vs. agrupadas** (`app/(app)/rides/new/page.tsx`): o usuário escolhe entre registrar cada corrida individualmente (fluxo de sempre) ou registrar o dia inteiro de uma vez (`components/rides/BatchRideForm.tsx`) informando só a plataforma, a data, a quantidade de corridas e o faturamento/custo total. Uma corrida "agrupada" vira uma única linha em `rides` com `ride_count` = quantidade informada (coluna nova, default 1 para corridas avulsas) e, se houver custo, uma linha correspondente em `expenses` (categoria "other"). O ranking por "corridas" (`get_group_ranking()`) soma `ride_count` em vez de contar linhas, para não subestimar quem usa o modo agrupado.
+- **Conformidade com a LGPD** (Perfil → seção "Privacidade e dados"): "Baixar meus dados" (`lib/data-export.ts`) reúne as 15 tabelas que guardam algo do usuário (perfil, corridas, despesas, ganhos extras, metas, reports do mapa, votos, posts, reações, grupos de ranking próprios e como membro, canais de voz próprios e como membro, mensagens de voz, inscrições push) num único JSON baixado no navegador — cobre o direito de portabilidade/acesso do Art. 18. "Excluir minha conta" chama `delete_own_account()` (`supabase/migrations/0018_delete_own_account.sql`), uma função `SECURITY DEFINER` que apaga a linha em `auth.users`; o `on delete cascade` já existente em todas as foreign keys do schema remove o resto (perfil, corridas, posts, grupos, canais, etc.) automaticamente — cobre o direito de eliminação. `app/privacy/page.tsx` e `app/terms/page.tsx` são as páginas públicas de Política de Privacidade e Termos de Uso (acessíveis sem login — foram adicionadas ao `PUBLIC_PATHS` do middleware), e o cadastro (`app/(auth)/register/page.tsx`) exige um checkbox de consentimento linkando as duas antes de criar a conta. **Aviso**: o conteúdo de `/privacy` e `/terms` é um rascunho técnico gerado para destravar o desenvolvimento, não assessoria jurídica — revisar com um advogado antes de qualquer lançamento comercial real.
+- **Observabilidade de erros** (`@sentry/nextjs`): `instrumentation.ts` (server/edge) + `instrumentation-client.ts` (client) inicializam o Sentry a partir de `NEXT_PUBLIC_SENTRY_DSN`; sem essa variável, o SDK fica desabilitado (`enabled: !!process.env.NEXT_PUBLIC_SENTRY_DSN`) e não faz nada — zero custo/risco em ambientes sem Sentry configurado. `app/global-error.tsx` captura erros de renderização do React que escapam para o boundary raiz. Veja a seção de variáveis de ambiente acima para configurar sua própria conta Sentry.
 
 **Ainda mockado** — fora do escopo desta rodada:
 
@@ -62,4 +69,4 @@ VAPID_PRIVATE_KEY=
 
 ## Stack
 
-Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · shadcn/ui · Supabase (Postgres + Auth + Realtime) · TomTom Maps (`@tomtom-international/web-sdk-maps`) · Web Push (`web-push`) · React Hook Form + Zod · Recharts · next-themes.
+Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · shadcn/ui · Supabase (Postgres + Auth + Realtime) · TomTom Maps (`@tomtom-international/web-sdk-maps`) · Web Push (`web-push`) · Sentry (`@sentry/nextjs`) · React Hook Form + Zod · Recharts · next-themes.
